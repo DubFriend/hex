@@ -30,8 +30,7 @@ $(document).ready(function () {
 
     var hex = createHexController({
         model: createHex({
-            size: 500
-
+            size: 50
         }),
         view: createHexView({
             context: $canvas[0].getContext('2d'),
@@ -46,11 +45,8 @@ $(document).ready(function () {
         hex.borderScroll(getCursorCoord(event));
     });
 
-    var dx = 0, dy = 0;
     setInterval(function () {
-        hex.drawBoard({x: dx, y: dy });
-        dx += 1;
-        dy += 1;
+        hex.tick();
     }, 16);
 
 });

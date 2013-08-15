@@ -25,7 +25,6 @@ var addVector = function (a, b) {
 
 window.createHex = function (fig) {
     var that = {},
-        //view = fig.view,
         size = fig.size,
         board = (function () {
             var board = {};
@@ -44,11 +43,6 @@ window.createHex = function (fig) {
     that.getBoard = function () {
         return board;
     };
-
-    //that.drawBoard = function (center) {
-    //    view.clear();
-    //    view.drawHexagonalGrid(board, center);
-    //};
 
     return that;
 };
@@ -132,7 +126,6 @@ window.createHexView = function (fig) {
         ctx.fillText(fig.coord.x + ", " + fig.coord.y, x, y);
     };
 
-
     that.drawHexagonalGrid = function (board, center) {
         _.each(coordOnScreen(center), function (coord) {
             var pixel = coordToPixels(coord, center);
@@ -157,35 +150,35 @@ window.createHexController = function (fig) {
         center = { x: 0, y: 0 },
         velocity = { x: 0, y: 0 },
         WIDTH = fig.width,
-        HEIGHT = fig.height;
+        HEIGHT = fig.height,
 
-    that.drawBoard = function () {
-        view.clear();
-        center = addVector(center, velocity);
-        view.drawHexagonalGrid(model.getBoard(), center);
-    };
+        drawBoard = function () {
+            view.clear();
+            center = addVector(center, velocity);
+            view.drawHexagonalGrid(model.getBoard(), center);
+        };
 
     that.tick = function () {
-        that.drawBoard();
+        drawBoard();
     };
 
-    that.borderScroll = function (pixel) {
-        var direction = addVector(pixel, { x: -WIDTH / 2, y: -HEIGHT / 2 });
-        velocity.x = 0;
-        velocity.y = 0;
-        if(direction.x > 100) {
-            velocity.x = 2;
-        }
-        else if(direction.x < -100) {
-            velocity.x = -2;
-        }
-        if(direction.y > 100) {
-            velocity.y = 2;
-        }
-        else if(direction.y < -100){
-            velocity.y = -2;
-        }
-    };
+    that.borderScroll = (function () {
+        var calculateBorderVelocity = function (direction, length) {
+            var velocity = 0;
+            if(Math.abs(direction) > length / 6) {
+                velocity = Math.round(
+                    direction / Math.abs(direction) * (Math.abs(direction) - length / 6) / 20
+                );
+            }
+            return velocity;
+        };
+
+        return function (pixel) {
+            var direction = addVector(pixel, { x: -WIDTH / 2, y: -HEIGHT / 2 });
+            velocity.x = calculateBorderVelocity(direction.x, WIDTH);
+            velocity.y = calculateBorderVelocity(direction.y, HEIGHT);
+        };
+    }());
 
     return that;
 };
