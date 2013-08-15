@@ -61,15 +61,46 @@ window.createHexView = function (fig) {
 
         coordToPixels = function (coord, center) {
             return {
-                x: coord.x * 1.5 * radius + center.x + screenCenter.x,
-                y: coord.y * longLeg * 2 + coord.x * longLeg + center.y + screenCenter.y
+                x: Math.round(coord.x * 1.5 * radius - center.x + screenCenter.x),
+                y: Math.round(coord.y * longLeg * 2 + coord.x * longLeg - center.y + screenCenter.y)
+            };
+        },
+
+        //returns coordinates of closest coordinates, pixel distance from the center.
+        pixelToCoord = function (pixel) {
+            var x = Math.round(pixel.x / (1.5 * radius));
+            var y = Math.round(-x / 2) + Math.round(pixel.y / (2 * longLeg));
+            return {
+                x: x,
+                y: y
             };
         },
 
         isPixelOnScreen = function (pixel) {
-            return ( pixel.x >= 0 && pixel.x < WIDTH - 50 &&
-                     pixel.y >= 0 && pixel.y < HEIGHT - 50);
-        };
+            return ( pixel.x >= 0 && pixel.x < WIDTH  &&
+                     pixel.y >= 0 && pixel.y < HEIGHT );
+        },
+
+        //generate a list of only board coordinates that are on screen.
+        //note that this method doesnt check if coordinates exist on actual game board.
+        //also right now it's returning a parallelogram shape (some squares arent on board)
+        coordOnScreen = (function () {
+            var hexWidth = Math.round((WIDTH / (radius * 1.5)) / 2 + 1),
+                hexHeight = Math.round((HEIGHT / (longLeg * 2)) / 2 * 2);
+            return function (center) {
+                var centerHex = pixelToCoord(center);
+                var coord = [];
+                _.each(_.range(1-hexWidth, hexWidth), function (x) {
+                    _.each(_.range(1-hexHeight, hexHeight), function (y) {
+                        coord.push({
+                            x: centerHex.x + x,
+                            y: centerHex.y + y
+                        });
+                    });
+                });
+                return coord;
+            };
+        }());
 
     //radius is distance from center to vertex in pixels
     that.drawHexagon = function (fig) {
@@ -91,7 +122,20 @@ window.createHexView = function (fig) {
         ctx.fillText(fig.coord.x + ", " + fig.coord.y, x, y);
     };
 
+
     that.drawHexagonalGrid = function (board, center) {
+        //console.log(center);
+        _.each(coordOnScreen(center), function (coord) {
+            var pixel = coordToPixels(coord, center);
+            if(board[stringKey(coord)] !== undefined && isPixelOnScreen(pixel)) {
+                that.drawHexagon({
+                    center: pixel,
+                    coord: coord
+                });
+            }
+        });
+
+        /*
         _.each(board, function (val, key) {
             var coord = parseKey(key),
                 pixel = coordToPixels(coord, center);
@@ -103,6 +147,7 @@ window.createHexView = function (fig) {
                 });
             }
         });
+        */
     };
 
     that.clear = function () {

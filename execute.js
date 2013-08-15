@@ -8,7 +8,7 @@ $(document).ready(function () {
     $gameWindow.append($canvas);
 
     var hex = createHex({
-        size: 7,
+        size: 50,
         view: createHexView({
             context: $canvas[0].getContext('2d'),
             width: $canvas.width(),
@@ -19,8 +19,8 @@ $(document).ready(function () {
     var dx = 0, dy = 0;
     setInterval(function () {
         hex.drawBoard({x: dx, y: dy });
-        dx += -1;
-        dy += 1;
+        dx += 3;
+        dy += 3;
     }, 16);
     hex.drawBoard({ x: 100, y: 150 });
 });
