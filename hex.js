@@ -22,8 +22,8 @@ window.createHex = function (fig) {
         size = fig.size,
         board = (function () {
             var board = {};
-            _.each(_.range(-size + 1, size), function (x) {
-                _.each(_.range(-size + 1, size), function (y) {
+            _.each(_.range(1 - size, size), function (x) {
+                _.each(_.range(1 - size, size), function (y) {
                     if(Math.abs(x + y) < size) {
                         board[x + ',' + y] = null;
                     }
@@ -34,7 +34,9 @@ window.createHex = function (fig) {
 
         axialToCubic = function (axial) {};
 
+
     that.drawBoard = function (center) {
+        view.clear();
         view.drawHexagonalGrid(board, center);
     };
 
@@ -49,8 +51,8 @@ window.createHexView = function (fig) {
         HEIGHT = fig.height,
 
         radius = fig.radius || 40,
-        shortLeg = radius / 2,
         longLeg = radius * Math.sqrt(3) / 2,
+        //shortLeg = radius / 2,
 
         screenCenter = {
             x: WIDTH / 2,
@@ -59,14 +61,14 @@ window.createHexView = function (fig) {
 
         coordToPixels = function (coord, center) {
             return {
-                x: coord.x * 1.5 * radius + screenCenter.x,
-                y: coord.y * longLeg * 2 + coord.x * longLeg + screenCenter.y
+                x: coord.x * 1.5 * radius + center.x + screenCenter.x,
+                y: coord.y * longLeg * 2 + coord.x * longLeg + center.y + screenCenter.y
             };
         },
 
-        isCoordOnScreen = function (pixel) {
-            return ( pixel.x >= 0 && pixel.x < WIDTH &&
-                     pixel.y >= 0 && pixel.y < HEIGHT );
+        isPixelOnScreen = function (pixel) {
+            return ( pixel.x >= 0 && pixel.x < WIDTH - 50 &&
+                     pixel.y >= 0 && pixel.y < HEIGHT - 50);
         };
 
     //radius is distance from center to vertex in pixels
@@ -85,6 +87,8 @@ window.createHexView = function (fig) {
         });
         ctx.closePath();
         ctx.stroke();
+
+        ctx.fillText(fig.coord.x + ", " + fig.coord.y, x, y);
     };
 
     that.drawHexagonalGrid = function (board, center) {
@@ -92,17 +96,25 @@ window.createHexView = function (fig) {
             var coord = parseKey(key),
                 pixel = coordToPixels(coord, center);
 
-            if(isCoordOnScreen(pixel)) {
+            if(isPixelOnScreen(pixel)) {
                 that.drawHexagon({
-                    center: {
-                        x: pixel.x + center.x,
-                        y: pixel.y + center.y
-                    },
+                    center: pixel,
                     coord: coord
                 });
             }
         });
     };
+
+    that.clear = function () {
+        ctx.clearRect(0, 0, WIDTH, HEIGHT);
+    };
+
+    return that;
+};
+
+
+window.createHexController = function (fig) {
+    var that = {};
 
     return that;
 };

@@ -16,5 +16,11 @@ $(document).ready(function () {
         })
     });
 
-    hex.drawBoard({ x: 0, y: 0 });
+    var dx = 0, dy = 0;
+    setInterval(function () {
+        hex.drawBoard({x: dx, y: dy });
+        dx += -1;
+        dy += 1;
+    }, 16);
+    hex.drawBoard({ x: 100, y: 150 });
 });
