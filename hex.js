@@ -16,9 +16,16 @@ var stringKey = function (objectKey) {
     return objectKey.x + ',' + objectKey.y;
 };
 
+var addVector = function (a, b) {
+    return {
+        x: a.x + b.x,
+        y: a.y + b.y
+    };
+};
+
 window.createHex = function (fig) {
     var that = {},
-        view = fig.view,
+        //view = fig.view,
         size = fig.size,
         board = (function () {
             var board = {};
@@ -34,11 +41,14 @@ window.createHex = function (fig) {
 
         axialToCubic = function (axial) {};
 
-
-    that.drawBoard = function (center) {
-        view.clear();
-        view.drawHexagonalGrid(board, center);
+    that.getBoard = function () {
+        return board;
     };
+
+    //that.drawBoard = function (center) {
+    //    view.clear();
+    //    view.drawHexagonalGrid(board, center);
+    //};
 
     return that;
 };
@@ -77,7 +87,7 @@ window.createHexView = function (fig) {
         },
 
         isPixelOnScreen = function (pixel) {
-            return ( pixel.x >= 0 && pixel.x < WIDTH  &&
+            return ( pixel.x >= 0 && pixel.x < WIDTH &&
                      pixel.y >= 0 && pixel.y < HEIGHT );
         },
 
@@ -124,30 +134,12 @@ window.createHexView = function (fig) {
 
 
     that.drawHexagonalGrid = function (board, center) {
-        //console.log(center);
         _.each(coordOnScreen(center), function (coord) {
             var pixel = coordToPixels(coord, center);
             if(board[stringKey(coord)] !== undefined && isPixelOnScreen(pixel)) {
-                that.drawHexagon({
-                    center: pixel,
-                    coord: coord
-                });
+                that.drawHexagon({ center: pixel, coord: coord });
             }
         });
-
-        /*
-        _.each(board, function (val, key) {
-            var coord = parseKey(key),
-                pixel = coordToPixels(coord, center);
-
-            if(isPixelOnScreen(pixel)) {
-                that.drawHexagon({
-                    center: pixel,
-                    coord: coord
-                });
-            }
-        });
-        */
     };
 
     that.clear = function () {
@@ -159,7 +151,41 @@ window.createHexView = function (fig) {
 
 
 window.createHexController = function (fig) {
-    var that = {};
+    var that = {},
+        model = fig.model,
+        view = fig.view,
+        center = { x: 0, y: 0 },
+        velocity = { x: 0, y: 0 },
+        WIDTH = fig.width,
+        HEIGHT = fig.height;
+
+    that.drawBoard = function () {
+        view.clear();
+        center = addVector(center, velocity);
+        view.drawHexagonalGrid(model.getBoard(), center);
+    };
+
+    that.tick = function () {
+        that.drawBoard();
+    };
+
+    that.borderScroll = function (pixel) {
+        var direction = addVector(pixel, { x: -WIDTH / 2, y: -HEIGHT / 2 });
+        velocity.x = 0;
+        velocity.y = 0;
+        if(direction.x > 100) {
+            velocity.x = 2;
+        }
+        else if(direction.x < -100) {
+            velocity.x = -2;
+        }
+        if(direction.y > 100) {
+            velocity.y = 2;
+        }
+        else if(direction.y < -100){
+            velocity.y = -2;
+        }
+    };
 
     return that;
 };
