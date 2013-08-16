@@ -1,8 +1,10 @@
 (function () {
 'use strict';
 
+
 //using axial coordinate system
 //http://www.redblobgames.com/grids/hexagons/#coordinates
+
 
 var parseKey = function (stringKey) {
     var numbers = stringKey.split(',');
@@ -23,7 +25,13 @@ var addVector = function (a, b) {
     };
 };
 
-window.createHex = function (fig) {
+//note: sign(0) === 1
+var sign = function (x) {
+    return x < 0 ? -1 : 1;
+};
+
+
+window.createHexModel = function (fig) {
     var that = {},
         size = fig.size,
         board = (function () {
@@ -47,21 +55,48 @@ window.createHex = function (fig) {
     return that;
 };
 
+
+//rendering only
+window.createHexDraw = function (ctx) {
+    var that = {};
+
+    that.hexagon = function (fig) {
+        var x = fig.center.x,
+            y = fig.center.y,
+            radius = fig.radius;
+
+        ctx.strokeStyle = 'rgb(150, 150, 80)';
+        ctx.fillStyle = 'rgb(0, 71, 111)';
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        _.each(_.range(Math.PI/3, 2*Math.PI, Math.PI/3), function (deg) {
+            ctx.lineTo(
+                x + Math.cos(deg) * radius,
+                y + Math.sin(deg) * radius
+            );
+        });
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.strokeText(fig.coord.x + ", " + fig.coord.y, x, y);
+    };
+
+    that.clear = function () {
+        ctx.clearRect(0, 0, SCREEN.width, SCREEN.height);
+    };
+
+    return that;
+};
+
+
+//view based logic only, no rendering (use createHexDraw)
 window.createHexView = function (fig) {
     var that = {},
-        ctx = fig.context,
-
-        WIDTH = fig.width,
-        HEIGHT = fig.height,
-
+        draw = fig.draw,
         radius = fig.radius || 40,
         longLeg = radius * Math.sqrt(3) / 2,
         //shortLeg = radius / 2,
-
-        screenCenter = {
-            x: WIDTH / 2,
-            y: HEIGHT / 2
-        },
+        screenCenter = { x: SCREEN.width / 2, y: SCREEN.height / 2 },
 
         coordToPixels = function (coord, center) {
             return {
@@ -72,71 +107,55 @@ window.createHexView = function (fig) {
 
         //returns coordinates of closest coordinates, pixel distance from the center.
         pixelToCoord = function (pixel) {
-            var x = Math.round(pixel.x / (1.5 * radius));
-            var y = Math.round(-x / 2) + Math.round(pixel.y / (2 * longLeg));
-            return {
-                x: x,
-                y: y
+            var x = Math.round(pixel.x / (1.5 * radius)),
+                y = Math.round(-x / 2) + Math.round(pixel.y / (2 * longLeg));
+            return { x: x, y: y };
+        };
+
+        //isPixelOnScreen = function (pixel) {
+        //    return ( pixel.x >= 0 && pixel.x < SCREEN.width &&
+        //             pixel.y >= 0 && pixel.y < SCREEN.height );
+        //};
+
+    //public for testing purposes only
+    that.coordOnScreen = (function () {
+        var hexWidth = Math.floor((SCREEN.width/ (radius * 1.5)) / 2 + 2),
+            hexHeight = Math.floor(((SCREEN.height) / (longLeg * 2)) / 2 + 3),
+
+            hexRange = function (xDiff) {
+                var shift = -Math.floor(Math.abs(xDiff / 2)) * sign(xDiff),
+                    cut = xDiff % 2 === 1 && sign(xDiff) === 1 ? -1 : 0;
+
+                return _.range(
+                    1 - hexHeight + shift + cut,
+                    hexHeight + shift + cut
+                );
             };
-        },
 
-        isPixelOnScreen = function (pixel) {
-            return ( pixel.x >= 0 && pixel.x < WIDTH &&
-                     pixel.y >= 0 && pixel.y < HEIGHT );
-        },
-
-        //generate a list of only board coordinates that are on screen.
-        //note that this method doesnt check if coordinates exist on actual game board.
-        //also right now it's returning a parallelogram shape (some squares arent on board)
-        coordOnScreen = (function () {
-            var hexWidth = Math.round((WIDTH / (radius * 1.5)) / 2 + 1),
-                hexHeight = Math.round((HEIGHT / (longLeg * 2)) / 2 * 2);
-            return function (center) {
-                var centerHex = pixelToCoord(center);
-                var coord = [];
-                _.each(_.range(1-hexWidth, hexWidth), function (x) {
-                    _.each(_.range(1-hexHeight, hexHeight), function (y) {
-                        coord.push({
-                            x: centerHex.x + x,
-                            y: centerHex.y + y
-                        });
-                    });
+        return function (center) {
+            return _.flatten(_.map(_.range(1-hexWidth, hexWidth), function (x) {
+                return _.map(hexRange(x), function (y) {
+                    return addVector(pixelToCoord(center), { x: x, y: y });
                 });
-                return coord;
-            };
-        }());
+            }));
+        };
 
-    //radius is distance from center to vertex in pixels
-    that.drawHexagon = function (fig) {
-        var x = fig.center.x,
-            y = fig.center.y;
-
-        ctx.strokeStyle = 'rgb(150, 150, 80)';
-        ctx.beginPath();
-        ctx.moveTo(x + radius, y);
-        _.each(_.range(Math.PI/3, 2*Math.PI, Math.PI/3), function (deg) {
-            ctx.lineTo(
-                x + Math.cos(deg) * radius,
-                y + Math.sin(deg) * radius
-            );
-        });
-        ctx.closePath();
-        ctx.stroke();
-
-        ctx.fillText(fig.coord.x + ", " + fig.coord.y, x, y);
-    };
+    }());
 
     that.drawHexagonalGrid = function (board, center) {
-        _.each(coordOnScreen(center), function (coord) {
-            var pixel = coordToPixels(coord, center);
-            if(board[stringKey(coord)] !== undefined && isPixelOnScreen(pixel)) {
-                that.drawHexagon({ center: pixel, coord: coord });
+        _.each(that.coordOnScreen(center), function (coord) {
+            if(board[stringKey(coord)] !== undefined ) {
+                draw.hexagon({
+                    center: coordToPixels(coord, center),
+                    coord: coord,
+                    radius: radius
+                });
             }
         });
     };
 
     that.clear = function () {
-        ctx.clearRect(0, 0, WIDTH, HEIGHT);
+        draw.clear();
     };
 
     return that;
@@ -149,8 +168,6 @@ window.createHexController = function (fig) {
         view = fig.view,
         center = { x: 0, y: 0 },
         velocity = { x: 0, y: 0 },
-        WIDTH = fig.width,
-        HEIGHT = fig.height,
 
         drawBoard = function () {
             view.clear();
@@ -174,9 +191,12 @@ window.createHexController = function (fig) {
         };
 
         return function (pixel) {
-            var direction = addVector(pixel, { x: -WIDTH / 2, y: -HEIGHT / 2 });
-            velocity.x = calculateBorderVelocity(direction.x, WIDTH);
-            velocity.y = calculateBorderVelocity(direction.y, HEIGHT);
+            var direction = addVector(pixel, {
+                x: -SCREEN.width / 2,
+                y: -SCREEN.height / 2
+            });
+            velocity.x = calculateBorderVelocity(direction.x, SCREEN.width);
+            velocity.y = calculateBorderVelocity(direction.y, SCREEN.height);
         };
     }());
 

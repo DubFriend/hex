@@ -2,7 +2,7 @@ $(document).ready(function () {
     'use strict';
     //http://www.quirksmode.org/js/events_properties.html
     var getCursorCoord = function (e) {
-        var targ;
+        var targ, x, y;
         if(!e) {
             e = window.event;
         }
@@ -15,8 +15,9 @@ $(document).ready(function () {
         if(targ.nodeType == 3) {
             targ = targ.parentNode;
         }
-        var x = e.pageX - $(targ).offset().left;
-        var y = e.pageY - $(targ).offset().top;
+
+        x = e.pageX - $(targ).offset().left;
+        y = e.pageY - $(targ).offset().top;
 
         return { x : x, y: y };
     };
@@ -28,25 +29,50 @@ $(document).ready(function () {
 
     $gameWindow.append($canvas);
 
+    window.SCREEN = {
+        width: $canvas.width(),
+        height: $canvas.height()
+    };
+
     var hex = createHexController({
-        model: createHex({
+        model: createHexModel({
             size: 50
         }),
         view: createHexView({
-            context: $canvas[0].getContext('2d'),
-            width: $canvas.width(),
-            height: $canvas.height()
-        }),
-        width: $canvas.width(),
-        height: $canvas.height()
+            draw: createHexDraw($canvas[0].getContext('2d')),
+        })
     });
+
+
+    var intervalRef;
 
     $canvas.mousemove(function (event) {
-        hex.borderScroll(getCursorCoord(event));
+        if(intervalRef) {
+            hex.borderScroll(getCursorCoord(event));
+        }
     });
 
-    setInterval(function () {
-        hex.tick();
-    }, 16);
+    $canvas.mouseleave(function () {
+        if(intervalRef) {
+            hex.borderScroll({ x: $canvas.width() / 2, y: $canvas.height() / 2 });
+        }
+    });
 
+    var start = function () {
+        if(!intervalRef) {
+            intervalRef = setInterval(function () {
+                hex.tick();
+            }, 16);
+        }
+    };
+
+    var stop = function () {
+        clearInterval(intervalRef);
+        intervalRef = null;
+    };
+
+    $('#start').click(start);
+    $('#stop').click(stop);
+
+    start();
 });
