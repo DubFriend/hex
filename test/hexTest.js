@@ -33,12 +33,15 @@ var hexView, hexagonData;
 
 module('Hex View', {
     setup: function () {
-        hexagonData = [];
         var radius = 5;
-        window.SCREEN = {
+
+        hexagonData = [];
+
+        SCREEN = {
             width: radius * 3,
             height: Math.floor(4 * radius * Math.sqrt(3) / 2)
         };
+
         hexView = createHexView({
             radius: radius,
             draw: {

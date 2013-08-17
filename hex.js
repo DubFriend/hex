@@ -1,9 +1,9 @@
-(function () {
-'use strict';
-
 
 //using axial coordinate system
 //http://www.redblobgames.com/grids/hexagons/#coordinates
+
+//canvas dimensions. (assigned values after canvas is created)
+var SCREEN = { width: null, height: null };
 
 
 var parseKey = function (stringKey) {
@@ -59,7 +59,8 @@ var toDegree = function (rad) {
 };
 
 
-window.createHexModel = function (fig) {
+
+var createHexModel = function (fig) {
     var that = {},
         size = fig.size,
         board = (function () {
@@ -84,8 +85,9 @@ window.createHexModel = function (fig) {
 };
 
 
+
 //rendering only
-window.createHexDraw = function (ctx) {
+var createHexDraw = function (ctx) {
     var that = {};
 
     that.hexagon = function (fig) {
@@ -118,8 +120,9 @@ window.createHexDraw = function (ctx) {
 };
 
 
+
 //view based logic only, no rendering (use createHexDraw)
-window.createHexView = function (fig) {
+var createHexView = function (fig) {
     var that = {},
         draw = fig.draw,
         radius = fig.radius || 40,
@@ -198,7 +201,8 @@ window.createHexView = function (fig) {
 };
 
 
-window.createHexController = function (fig) {
+
+var createHexController = function (fig) {
     var that = {},
         model = fig.model,
         view = fig.view,
@@ -233,16 +237,21 @@ window.createHexController = function (fig) {
 
         return function (pixel) {
             var direction = addVector(pixel, {
-                x: -SCREEN.width / 2,
-                y: -SCREEN.height / 2
-            });
-            velocity.x = calculateBorderVelocity(direction.x, SCREEN.width);
-            velocity.y = calculateBorderVelocity(direction.y, SCREEN.height);
+                    x: -SCREEN.width / 2,
+                    y: -SCREEN.height / 2
+                }),
+
+                untilted = {
+                    x: calculateBorderVelocity(direction.x, SCREEN.width),
+                    y: calculateBorderVelocity(direction.y, SCREEN.height)
+                };
+
+            velocity = toCartesian(addVector(
+                toPolar(untilted),
+                { radius: 0, theta: -tilt }
+            ));
         };
     }());
 
     return that;
 };
-
-
-}());

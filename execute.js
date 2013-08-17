@@ -1,5 +1,6 @@
 $(document).ready(function () {
     'use strict';
+
     //http://www.quirksmode.org/js/events_properties.html
     var getCursorCoord = function (e) {
         var targ, x, y;
@@ -29,10 +30,8 @@ $(document).ready(function () {
 
     $gameWindow.append($canvas);
 
-    window.SCREEN = {
-        width: $canvas.width(),
-        height: $canvas.height()
-    };
+    SCREEN.width = $canvas.width();
+    SCREEN.height = $canvas.height();
 
     var hex = createHexController({
         model: createHexModel({
@@ -42,7 +41,6 @@ $(document).ready(function () {
             draw: createHexDraw($canvas[0].getContext('2d')),
         })
     });
-
 
     var intervalRef;
 
@@ -54,7 +52,7 @@ $(document).ready(function () {
 
     $canvas.mouseleave(function () {
         if(intervalRef) {
-            hex.borderScroll({ x: $canvas.width() / 2, y: $canvas.height() / 2 });
+            hex.borderScroll({ x: SCREEN.width / 2, y: SCREEN.height / 2 });
         }
     });
 
