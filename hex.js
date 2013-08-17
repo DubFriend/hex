@@ -157,8 +157,8 @@ window.createHexView = function (fig) {
 
     //public for testing purposes only
     that.coordOnScreen = (function () {
-        var hexWidth = Math.floor((SCREEN.width/ (radius * 1.5)) / 2 + 1),
-            hexHeight = Math.floor(((SCREEN.height) / (longLeg * 2)) / 2 + 1),
+        var hexWidth = Math.floor((SCREEN.width/ (radius * 1.5)) / 2 + 2),
+            hexHeight = Math.floor(((SCREEN.height) / (longLeg * 2)) / 2 + 3),
 
             hexRange = function (xDiff) {
                 var shift = -Math.floor(Math.abs(xDiff / 2)) * sign(xDiff),
