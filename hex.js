@@ -38,15 +38,15 @@ var toPolar = function (cartesian) {
     theta += x <= 0 && y <= 0 || x <= 0 && y > 0 ? Math.PI : 0;
 
     return {
-        radius: Math.round(Math.sqrt(x * x + y * y)),
+        radius: Math.sqrt(x * x + y * y),
         theta: theta
     };
 };
 
 var toCartesian = function (polar) {
     return {
-        x: Math.round(polar.radius * Math.cos(polar.theta)),
-        y: Math.round(polar.radius * Math.sin(polar.theta))
+        x: polar.radius * Math.cos(polar.theta),
+        y: polar.radius * Math.sin(polar.theta)
     };
 };
 
@@ -73,6 +73,7 @@ var hexagonOfCoordinates = function (size, center) {
 
 
 var createHexModel = function (fig) {
+    'use strict';
     var that = {},
         size = fig.size,
         board = (function () {
@@ -96,29 +97,44 @@ var createHexModel = function (fig) {
 
 //rendering only
 var createHexDraw = function (ctx) {
+    'use strict';
     var that = {};
 
-    that.hexagon = function (fig) {
-        var x = fig.center.x,
-            y = fig.center.y,
-            radius = fig.radius,
-            tilt = fig.tilt;
+    that.hexagon = (function () {
 
-        ctx.strokeStyle = 'rgb(150, 150, 80)';
-        ctx.fillStyle = 'rgb(0, 71, 111)';
-        ctx.beginPath();
-        ctx.moveTo(x + radius * Math.cos(tilt), y + radius * Math.sin(tilt));
-        _.each(_.range(Math.PI/3, 2*Math.PI, Math.PI/3), function (deg) {
-            ctx.lineTo(
-                x + Math.cos(deg + tilt) * radius,
-                y + Math.sin(deg + tilt) * radius
-            );
-        });
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-        ctx.strokeText(fig.coord.x + ", " + fig.coord.y, x, y);
-    };
+        var radius,
+            tilt,
+            moves = [];
+
+        return function (fig) {
+            var x = fig.center.x,
+                y = fig.center.y;
+
+            //caching calculations
+            if(fig.radius !== radius || fig.tilt !== tilt) {
+                radius = fig.radius;
+                tilt = fig.tilt;
+                moves = _.map(_.range(0, 2*Math.PI, Math.PI/3), function (deg) {
+                    return {
+                        x: Math.cos(deg + tilt) * radius,
+                        y: Math.sin(deg + tilt) * radius
+                    };
+                });
+            }
+
+            ctx.strokeStyle = 'rgb(150, 150, 80)';
+            ctx.fillStyle = 'rgb(0, 71, 111)';
+            ctx.beginPath();
+            ctx.moveTo(x + moves[0].x, y + moves[0].y);
+            _.each(_.rest(moves), function (move) {
+                ctx.lineTo(x + move.x, y + move.y);
+            });
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            ctx.strokeText(fig.coord.x + ", " + fig.coord.y, x, y);
+        };
+    }());
 
     that.clear = function () {
         ctx.clearRect(0, 0, SCREEN.width, SCREEN.height);
@@ -131,6 +147,7 @@ var createHexDraw = function (ctx) {
 
 //view based logic only, no rendering (use createHexDraw)
 var createHexView = function (fig) {
+    'use strict';
     var that = {},
         draw = fig.draw,
         radius = null,
@@ -157,36 +174,31 @@ var createHexView = function (fig) {
             var x = Math.round(pixel.x / (1.5 * radius)),
                 y = Math.round(-x / 2) + Math.round(pixel.y / (2 * longLeg));
             return { x: x, y: y };
-        };
+        },
 
         isPixelOnScreen = function (pixel) {
             return ( pixel.x >= -radius && pixel.x < SCREEN.width + radius &&
                      pixel.y >= -radius && pixel.y < SCREEN.height + radius );
-            //return ( pixel.x >= 0 && pixel.x < SCREEN.width &&
-            //         pixel.y >= 0 && pixel.y < SCREEN.height );
-        };
+        },
 
-    //public for testing purposes only
-    that.coordOnScreen = (function () {
-        return function (center) {
+        localCoord = function (center) {
             var size = Math.floor(
                 (_.max([SCREEN.width, SCREEN.height]) / (radius * 1.5)) / 2 + 4
             );
             return hexagonOfCoordinates(size, pixelToCoord(center));
         };
-    }());
 
-    that.drawHexagonalGrid = function (board, center, tilt, newRadius) {
-        radius = newRadius;
-        longLeg = newRadius * Math.sqrt(3) / 2;
-        _.each(that.coordOnScreen(center), function (coord) {
-            pixel = coordToPixels(coord, center, tilt);
-            if(board[stringKey(coord)] !== undefined && isPixelOnScreen(pixel)) {
+    that.drawHexagonalGrid = function (fig) {
+        radius = fig.radius;
+        longLeg = fig.radius * Math.sqrt(3) / 2;
+        _.each(localCoord(fig.center), function (coord) {
+            var pixel = coordToPixels(coord, fig.center, fig.tilt);
+            if(fig.board[stringKey(coord)] !== undefined && isPixelOnScreen(pixel)) {
                 draw.hexagon({
                     center: pixel,
                     coord: coord,
                     radius: radius,
-                    tilt: tilt
+                    tilt: fig.tilt
                 });
             }
         });
@@ -202,6 +214,7 @@ var createHexView = function (fig) {
 
 
 var createHexController = function (fig) {
+    'use strict';
     var that = {},
         model = fig.model,
         view = fig.view,
@@ -213,7 +226,12 @@ var createHexController = function (fig) {
         drawBoard = function () {
             view.clear();
             center = addVector(center, velocity);
-            view.drawHexagonalGrid(model.getBoard(), center, tilt, radius);
+            view.drawHexagonalGrid({
+                board:model.getBoard(),
+                center: center,
+                tilt: tilt,
+                radius: radius
+            });
         };
 
     that.tick = function () {
@@ -236,13 +254,12 @@ var createHexController = function (fig) {
 
     that.borderScroll = (function () {
         var calculateBorderVelocity = function (direction, length) {
-            var velocity = 0;
             if(Math.abs(direction) > length / 6) {
-                velocity = Math.round(
-                    direction / Math.abs(direction) * (Math.abs(direction) - length / 6) / 20
-                );
+                return (direction - length / 6) / 20;
             }
-            return velocity;
+            else {
+                return 0;
+            }
         };
 
         return function (pixel) {
