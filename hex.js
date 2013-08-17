@@ -31,9 +31,11 @@ var sign = function (x) {
     return x < 0 ? -1 : 1;
 };
 
+
 var toPolar = function (cartesian) {
-    var x = cartesian.x, y = cartesian.y,
-        theta = Math.atan(y / x);
+    var x = cartesian.x,
+        y = cartesian.y,
+        theta = Math.abs(x) > 0.001 ? Math.atan(y / x) : Math.PI / 2 * -sign(y);
 
     theta += x <= 0 && y <= 0 || x <= 0 && y > 0 ? Math.PI : 0;
 
