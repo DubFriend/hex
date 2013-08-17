@@ -31,11 +31,9 @@ var sign = function (x) {
     return x < 0 ? -1 : 1;
 };
 
-
 var toPolar = function (cartesian) {
-    var x = cartesian.x,
-        y = cartesian.y,
-        theta = Math.abs(x) > 0.001 ? Math.atan(y / x) : Math.PI / 2 * -sign(y);
+    var x = cartesian.x, y = cartesian.y,
+        theta = Math.abs(x) > 0.001 ? Math.atan(y/x) : Math.PI / 2 * -sign(y);
 
     theta += x <= 0 && y <= 0 || x <= 0 && y > 0 ? Math.PI : 0;
 
@@ -130,19 +128,16 @@ window.createHexView = function (fig) {
         screenCenter = { x: SCREEN.width / 2, y: SCREEN.height / 2 },
 
         coordToPixels = function (coord, center, tilt) {
-            var unrotated = {
-                x: coord.x * 1.5 * radius - center.x, //+ screenCenter.x,
-                y: coord.y * longLeg * 2 + coord.x * longLeg - center.y //+ screenCenter.y
-            };
-
-            var uncentered = toCartesian(addVector(toPolar(unrotated), { radius: 0, theta: tilt }));
-
-            return addVector(uncentered, screenCenter);
-
-            /*return {
-                x: Math.round(coord.x * 1.5 * radius - center.x + screenCenter.x),
-                y: Math.round(coord.y * longLeg * 2 + coord.x * longLeg - center.y + screenCenter.y)
-            };*/
+            return addVector(
+                toCartesian(addVector(
+                    toPolar({
+                        x: coord.x * 1.5 * radius - center.x,
+                        y: coord.y * longLeg * 2 + coord.x * longLeg - center.y
+                    }),
+                    { radius: 0, theta: tilt }
+                )),
+                screenCenter
+            );
         },
 
         //returns coordinates of closest coordinates, pixel distance from the center.
@@ -222,7 +217,6 @@ window.createHexController = function (fig) {
     };
 
     that.rotate = function (diff) {
-        console.log(tilt + ", " + toDegree(tilt));
         tilt += toRadian(diff);
     };
 
