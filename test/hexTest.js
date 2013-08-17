@@ -36,8 +36,8 @@ module('Hex View', {
         hexagonData = [];
         var radius = 5;
         window.SCREEN = {
-            width: radius * 6 - 2,
-            height: Math.floor(4 * radius * Math.sqrt(3) / 2 + 1)
+            width: radius * 3,
+            height: Math.floor(4 * radius * Math.sqrt(3) / 2)
         };
         hexView = createHexView({
             radius: radius,
@@ -54,19 +54,13 @@ module('Hex View', {
 test('coordOnScreen - center at origin', function () {
     deepEqual(
         hexView.coordOnScreen({ x: 0, y: 0 }),
-        [{ x: -2, y: 0 },
-         { x: -2, y: 1 },
-         { x: -2, y: 2 },
-         { x: -1, y: 0 },
-         { x: -1, y: 1 },
-         { x: 0, y: -1 },
-         { x: 0, y: 0 },
-         { x: 0, y: 1 },
-         { x: 1, y: -1 },
-         { x: 1, y: 0 },
-         { x: 2, y: -2 },
-         { x: 2, y: -1 },
-         { x: 2, y: 0 }],
+        [{ x: -2, y: -1 }, { x: -2, y: 0 }, { x: -2, y: 1 }, { x: -2, y: 2 },
+         { x: -2, y: 3 }, { x: -1, y: -2 }, { x: -1, y: -1 }, { x: -1, y: 0 },
+         { x: -1, y: 1 }, { x: -1, y: 2 }, { x: 0, y: -2 }, { x: 0, y: -1 },
+         { x: 0, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 2 }, { x: 1, y: -3 },
+         { x: 1, y: -2 }, { x: 1, y: -1 }, { x: 1, y: 0 }, { x: 1, y: 1 },
+         { x: 2, y: -3 }, { x: 2, y: -2 }, { x: 2, y: -1 }, { x: 2, y: 0 },
+         { x: 2, y: 1 }],
         'returns correct squares'
     );
 });

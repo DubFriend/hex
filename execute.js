@@ -58,6 +58,22 @@ $(document).ready(function () {
         }
     });
 
+    $(document).keydown(function (event) {
+        switch(event.keyCode) {
+            case 37: //left
+                hex.rotate(-1);
+                break;
+            case 38: //up
+                break;
+            case 39: //right
+                hex.rotate(1);
+                break;
+            case 40: //down
+                break;
+        }
+        return false;
+    });
+
     var start = function () {
         if(!intervalRef) {
             intervalRef = setInterval(function () {

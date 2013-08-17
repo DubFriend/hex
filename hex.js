@@ -19,15 +19,43 @@ var stringKey = function (objectKey) {
 };
 
 var addVector = function (a, b) {
-    return {
-        x: a.x + b.x,
-        y: a.y + b.y
-    };
+    var combined = {};
+    _.each(a, function (val, key) {
+        combined[key] = val + b[key];
+    });
+    return combined;
 };
 
 //note: sign(0) === 1
 var sign = function (x) {
     return x < 0 ? -1 : 1;
+};
+
+var toPolar = function (cartesian) {
+    var x = cartesian.x, y = cartesian.y,
+        theta = Math.atan(y / x);
+
+    theta += x <= 0 && y <= 0 || x <= 0 && y > 0 ? Math.PI : 0;
+
+    return {
+        radius: Math.round(Math.sqrt(x * x + y * y)),
+        theta: theta
+    };
+};
+
+var toCartesian = function (polar) {
+    return {
+        x: Math.round(polar.radius * Math.cos(polar.theta)),
+        y: Math.round(polar.radius * Math.sin(polar.theta))
+    };
+};
+
+var toRadian = function (deg) {
+    return Math.PI * deg / 180;
+};
+
+var toDegree = function (rad) {
+    return 180 * rad / Math.PI;
 };
 
 
@@ -63,16 +91,17 @@ window.createHexDraw = function (ctx) {
     that.hexagon = function (fig) {
         var x = fig.center.x,
             y = fig.center.y,
-            radius = fig.radius;
+            radius = fig.radius,
+            tilt = fig.tilt;
 
         ctx.strokeStyle = 'rgb(150, 150, 80)';
         ctx.fillStyle = 'rgb(0, 71, 111)';
         ctx.beginPath();
-        ctx.moveTo(x + radius, y);
+        ctx.moveTo(x + radius * Math.cos(tilt), y + radius * Math.sin(tilt));
         _.each(_.range(Math.PI/3, 2*Math.PI, Math.PI/3), function (deg) {
             ctx.lineTo(
-                x + Math.cos(deg) * radius,
-                y + Math.sin(deg) * radius
+                x + Math.cos(deg + tilt) * radius,
+                y + Math.sin(deg + tilt) * radius
             );
         });
         ctx.closePath();
@@ -98,11 +127,20 @@ window.createHexView = function (fig) {
         //shortLeg = radius / 2,
         screenCenter = { x: SCREEN.width / 2, y: SCREEN.height / 2 },
 
-        coordToPixels = function (coord, center) {
-            return {
+        coordToPixels = function (coord, center, tilt) {
+            var unrotated = {
+                x: coord.x * 1.5 * radius - center.x, //+ screenCenter.x,
+                y: coord.y * longLeg * 2 + coord.x * longLeg - center.y //+ screenCenter.y
+            };
+
+            var uncentered = toCartesian(addVector(toPolar(unrotated), { radius: 0, theta: tilt }));
+
+            return addVector(uncentered, screenCenter);
+
+            /*return {
                 x: Math.round(coord.x * 1.5 * radius - center.x + screenCenter.x),
                 y: Math.round(coord.y * longLeg * 2 + coord.x * longLeg - center.y + screenCenter.y)
-            };
+            };*/
         },
 
         //returns coordinates of closest coordinates, pixel distance from the center.
@@ -119,8 +157,8 @@ window.createHexView = function (fig) {
 
     //public for testing purposes only
     that.coordOnScreen = (function () {
-        var hexWidth = Math.floor((SCREEN.width/ (radius * 1.5)) / 2 + 2),
-            hexHeight = Math.floor(((SCREEN.height) / (longLeg * 2)) / 2 + 3),
+        var hexWidth = Math.floor((SCREEN.width/ (radius * 1.5)) / 2 + 1),
+            hexHeight = Math.floor(((SCREEN.height) / (longLeg * 2)) / 2 + 1),
 
             hexRange = function (xDiff) {
                 var shift = -Math.floor(Math.abs(xDiff / 2)) * sign(xDiff),
@@ -142,13 +180,14 @@ window.createHexView = function (fig) {
 
     }());
 
-    that.drawHexagonalGrid = function (board, center) {
+    that.drawHexagonalGrid = function (board, center, tilt) {
         _.each(that.coordOnScreen(center), function (coord) {
             if(board[stringKey(coord)] !== undefined ) {
                 draw.hexagon({
-                    center: coordToPixels(coord, center),
+                    center: coordToPixels(coord, center, tilt),
                     coord: coord,
-                    radius: radius
+                    radius: radius,
+                    tilt: tilt
                 });
             }
         });
@@ -168,15 +207,21 @@ window.createHexController = function (fig) {
         view = fig.view,
         center = { x: 0, y: 0 },
         velocity = { x: 0, y: 0 },
+        tilt = 0,
 
         drawBoard = function () {
             view.clear();
             center = addVector(center, velocity);
-            view.drawHexagonalGrid(model.getBoard(), center);
+            view.drawHexagonalGrid(model.getBoard(), center, tilt);
         };
 
     that.tick = function () {
         drawBoard();
+    };
+
+    that.rotate = function (diff) {
+        console.log(tilt + ", " + toDegree(tilt));
+        tilt += toRadian(diff);
     };
 
     that.borderScroll = (function () {
