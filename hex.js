@@ -58,6 +58,18 @@ var toDegree = function (rad) {
     return 180 * rad / Math.PI;
 };
 
+var hexagonOfCoordinates = function (size, center) {
+    var coords = [];
+    _.each(_.range(1 + center.x - size, center.x + size), function (x) {
+        _.each(_.range(1 + center.y - size, center.y + size), function (y) {
+            if(Math.abs(x - center.x + y - center.y) < size) {
+                coords.push({ x: x, y: y });
+            }
+        });
+    });
+    return coords;
+};
+
 
 
 var createHexModel = function (fig) {
@@ -65,12 +77,8 @@ var createHexModel = function (fig) {
         size = fig.size,
         board = (function () {
             var board = {};
-            _.each(_.range(1 - size, size), function (x) {
-                _.each(_.range(1 - size, size), function (y) {
-                    if(Math.abs(x + y) < size) {
-                        board[x + ',' + y] = null;
-                    }
-                });
+            _.each(hexagonOfCoordinates(size, { x: 0, y: 0 }), function (coord) {
+                board[coord.x + ',' + coord.y] = null;
             });
             return board;
         }()),
@@ -150,41 +158,27 @@ var createHexView = function (fig) {
             return { x: x, y: y };
         };
 
-        //isPixelOnScreen = function (pixel) {
-        //    return ( pixel.x >= 0 && pixel.x < SCREEN.width &&
-        //             pixel.y >= 0 && pixel.y < SCREEN.height );
-        //};
+        isPixelOnScreen = function (pixel) {
+            return ( pixel.x >= -radius && pixel.x < SCREEN.width + radius &&
+                     pixel.y >= -radius && pixel.y < SCREEN.height + radius );
+        };
 
     //public for testing purposes only
     that.coordOnScreen = (function () {
-        var hexWidth = Math.floor((SCREEN.width/ (radius * 1.5)) / 2 + 2),
-            hexHeight = Math.floor(((SCREEN.height) / (longLeg * 2)) / 2 + 3),
-
-            hexRange = function (xDiff) {
-                var shift = -Math.floor(Math.abs(xDiff / 2)) * sign(xDiff),
-                    cut = xDiff % 2 === 1 && sign(xDiff) === 1 ? -1 : 0;
-
-                return _.range(
-                    1 - hexHeight + shift + cut,
-                    hexHeight + shift + cut
-                );
-            };
-
+        var size = Math.floor(
+            (_.max([SCREEN.width, SCREEN.height]) / (radius * 1.5)) / 2 + 4
+        );
         return function (center) {
-            return _.flatten(_.map(_.range(1-hexWidth, hexWidth), function (x) {
-                return _.map(hexRange(x), function (y) {
-                    return addVector(pixelToCoord(center), { x: x, y: y });
-                });
-            }));
+            return hexagonOfCoordinates(size, pixelToCoord(center));
         };
-
     }());
 
     that.drawHexagonalGrid = function (board, center, tilt) {
         _.each(that.coordOnScreen(center), function (coord) {
-            if(board[stringKey(coord)] !== undefined ) {
+            pixel = coordToPixels(coord, center, tilt);
+            if(board[stringKey(coord)] !== undefined && isPixelOnScreen(pixel)) {
                 draw.hexagon({
-                    center: coordToPixels(coord, center, tilt),
+                    center: pixel,
                     coord: coord,
                     radius: radius,
                     tilt: tilt
