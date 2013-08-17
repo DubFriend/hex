@@ -62,11 +62,13 @@ $(document).ready(function () {
                 hex.rotate(-1);
                 break;
             case 38: //up
+                hex.zoom(1);
                 break;
             case 39: //right
                 hex.rotate(1);
                 break;
             case 40: //down
+                hex.zoom(-1);
                 break;
         }
         return false;

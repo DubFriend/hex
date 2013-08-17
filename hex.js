@@ -133,17 +133,18 @@ var createHexDraw = function (ctx) {
 var createHexView = function (fig) {
     var that = {},
         draw = fig.draw,
-        radius = fig.radius || 40,
-        longLeg = radius * Math.sqrt(3) / 2,
-        //shortLeg = radius / 2,
+        radius = null,
+        longLeg = null,
         screenCenter = { x: SCREEN.width / 2, y: SCREEN.height / 2 },
 
         coordToPixels = function (coord, center, tilt) {
+            var unitX = radius,
+                unitY = longLeg;
             return addVector(
                 toCartesian(addVector(
                     toPolar({
-                        x: coord.x * 1.5 * radius - center.x,
-                        y: coord.y * longLeg * 2 + coord.x * longLeg - center.y
+                        x: coord.x * 1.5 * unitX - center.x,
+                        y: coord.y * unitY * 2 + coord.x * unitY - center.y
                     }),
                     { radius: 0, theta: tilt }
                 )),
@@ -161,19 +162,23 @@ var createHexView = function (fig) {
         isPixelOnScreen = function (pixel) {
             return ( pixel.x >= -radius && pixel.x < SCREEN.width + radius &&
                      pixel.y >= -radius && pixel.y < SCREEN.height + radius );
+            //return ( pixel.x >= 0 && pixel.x < SCREEN.width &&
+            //         pixel.y >= 0 && pixel.y < SCREEN.height );
         };
 
     //public for testing purposes only
     that.coordOnScreen = (function () {
-        var size = Math.floor(
-            (_.max([SCREEN.width, SCREEN.height]) / (radius * 1.5)) / 2 + 4
-        );
         return function (center) {
+            var size = Math.floor(
+                (_.max([SCREEN.width, SCREEN.height]) / (radius * 1.5)) / 2 + 4
+            );
             return hexagonOfCoordinates(size, pixelToCoord(center));
         };
     }());
 
-    that.drawHexagonalGrid = function (board, center, tilt) {
+    that.drawHexagonalGrid = function (board, center, tilt, newRadius) {
+        radius = newRadius;
+        longLeg = newRadius * Math.sqrt(3) / 2;
         _.each(that.coordOnScreen(center), function (coord) {
             pixel = coordToPixels(coord, center, tilt);
             if(board[stringKey(coord)] !== undefined && isPixelOnScreen(pixel)) {
@@ -203,11 +208,12 @@ var createHexController = function (fig) {
         center = { x: 0, y: 0 },
         velocity = { x: 0, y: 0 },
         tilt = 0,
+        radius = 40,
 
         drawBoard = function () {
             view.clear();
             center = addVector(center, velocity);
-            view.drawHexagonalGrid(model.getBoard(), center, tilt);
+            view.drawHexagonalGrid(model.getBoard(), center, tilt, radius);
         };
 
     that.tick = function () {
@@ -217,6 +223,16 @@ var createHexController = function (fig) {
     that.rotate = function (diff) {
         tilt += toRadian(diff);
     };
+
+    that.zoom = (function () {
+        var minRadius = 25, maxRadius = 150;
+        return function (diff) {
+            var testRadius = radius + diff;
+            if(testRadius >= minRadius && testRadius <= maxRadius) {
+                radius = testRadius;
+            }
+        };
+    }());
 
     that.borderScroll = (function () {
         var calculateBorderVelocity = function (direction, length) {
