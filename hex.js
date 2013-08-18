@@ -58,7 +58,9 @@ var toDegree = function (rad) {
     return 180 * rad / Math.PI;
 };
 
+//returns axial coordinates of dimensions +-size for both axies (0 indexed)
 var hexagonOfCoordinates = function (size, center) {
+    center = center || { x: 0, y: 0 };
     var coords = [];
     _.each(_.range(1 + center.x - size, center.x + size), function (x) {
         _.each(_.range(1 + center.y - size, center.y + size), function (y) {
@@ -78,7 +80,7 @@ var createHexModel = function (fig) {
         size = fig.size,
         board = (function () {
             var board = {};
-            _.each(hexagonOfCoordinates(size, { x: 0, y: 0 }), function (coord) {
+            _.each(hexagonOfCoordinates(size), function (coord) {
                 board[coord.x + ',' + coord.y] = null;
             });
             return board;
@@ -102,9 +104,7 @@ var createHexDraw = function (ctx) {
 
     that.hexagon = (function () {
 
-        var radius,
-            tilt,
-            moves = [];
+        var radius, tilt, moves = [];
 
         return function (fig) {
             var x = fig.center.x,
@@ -122,14 +122,16 @@ var createHexDraw = function (ctx) {
                 });
             }
 
-            ctx.strokeStyle = 'rgb(150, 150, 80)';
-            ctx.fillStyle = 'rgb(0, 71, 111)';
+            ctx.strokeStyle = fig.stroke || 'rgb(150, 150, 80)';
+            ctx.fillStyle = fig.fill || 'rgb(0, 71, 111)';
+
             ctx.beginPath();
             ctx.moveTo(x + moves[0].x, y + moves[0].y);
             _.each(_.rest(moves), function (move) {
                 ctx.lineTo(x + move.x, y + move.y);
             });
             ctx.closePath();
+
             ctx.fill();
             ctx.stroke();
             ctx.strokeText(fig.coord.x + ", " + fig.coord.y, x, y);
@@ -225,37 +227,47 @@ var createHexController = function (fig) {
 
         drawBoard = function () {
             view.clear();
-            center = addVector(center, velocity);
             view.drawHexagonalGrid({
-                board:model.getBoard(),
+                board: model.getBoard(),
                 center: center,
                 tilt: tilt,
                 radius: radius
             });
         };
 
-    that.tick = function () {
-        drawBoard();
-    };
+    that.tick = (function() {
+        var lastCenter = { x: 0, y: 0 }, lastTilt, lastRadius;
+        return function () {
+
+            if(
+                //lastCenter.x !== center.x ||
+                //lastCenter.y !== center.y ||
+                velocity.x !== 0 || velocity.y !== 0 ||
+                lastTilt !== tilt ||
+                lastRadius !== radius
+            ) {
+                center = addVector(center, velocity);
+                drawBoard();
+            }
+            lastCenter.x = center.x;
+            lastCenter.y = center.y;
+            lastTilt = tilt;
+            lastRadius = radius;
+        };
+    }());
 
     that.rotate = function (diff) {
         tilt += toRadian(diff);
     };
 
-    that.zoom = (function () {
-        var minRadius = 25, maxRadius = 150;
-        return function (diff) {
-            var testRadius = radius + diff;
-            if(testRadius >= minRadius && testRadius <= maxRadius) {
-                radius = testRadius;
-            }
-        };
-    }());
+    that.zoom = function (diff) {
+        radius += radius + diff >= 25 && radius + diff <= 150 ? diff : 0;
+    };
 
     that.borderScroll = (function () {
         var calculateBorderVelocity = function (direction, length) {
             if(Math.abs(direction) > length / 6) {
-                return (direction - length / 6) / 20;
+                return sign(direction) * (Math.abs(direction)-length/6)/20;
             }
             else {
                 return 0;
