@@ -5,7 +5,6 @@
 //canvas dimensions. (assigned values after canvas is created)
 var SCREEN = { width: null, height: null };
 
-
 var parseKey = function (stringKey) {
     var numbers = stringKey.split(',');
     return {
@@ -18,13 +17,38 @@ var stringKey = function (objectKey) {
     return objectKey.x + ',' + objectKey.y;
 };
 
-var addVector = function (a, b) {
-    var combined = {};
-    _.each(a, function (val, key) {
-        combined[key] = val + b[key];
-    });
-    return combined;
-};
+var vector = (function () {
+
+    var reduceVector = function (collection, reduceFunction) {
+        return _.reduce(collection, function (memo, vector) {
+            var combined = {};
+            _.each(vector, function (val, key) {
+                combined[key] = reduceFunction(val, memo[key]);
+            });
+            return combined;
+        });
+    };
+
+    return {
+        add: function () {
+            return reduceVector(arguments, function (a, b) { return a + b; });
+        },
+
+        dotProduct: function () {
+            return reduceVector(arguments, function (a, b) { return a * b; });
+        },
+
+        negate: function (vector) {
+            var negated = {};
+            _.each(vector, function (val, key) { negated[key] = -val; });
+            return negated;
+        },
+
+        subtract: function (a, b) {
+            return this.add(a, this.negate(b));
+        }
+    };
+}());
 
 //note: sign(0) === 1
 var sign = function (x) {
@@ -134,6 +158,7 @@ var createHexDraw = function (ctx) {
 
             ctx.fill();
             ctx.stroke();
+            //note: text is super slow on firefox.
             ctx.strokeText(fig.coord.x + ", " + fig.coord.y, x, y);
         };
     }());
@@ -156,17 +181,21 @@ var createHexView = function (fig) {
         longLeg = null,
         screenCenter = { x: SCREEN.width / 2, y: SCREEN.height / 2 },
 
+        rotate = function (cartesian, tilt) {
+            return toCartesian(vector.add(
+                toPolar(cartesian), { radius: 0, theta: tilt }
+            ));
+        },
+
         coordToPixels = function (coord, center, tilt) {
-            var unitX = radius,
-                unitY = longLeg;
-            return addVector(
-                toCartesian(addVector(
-                    toPolar({
-                        x: coord.x * 1.5 * unitX - center.x,
-                        y: coord.y * unitY * 2 + coord.x * unitY - center.y
-                    }),
-                    { radius: 0, theta: tilt }
-                )),
+            return vector.add(
+                rotate(
+                    {
+                        x: coord.x * 1.5 * radius - center.x,
+                        y: coord.y * longLeg * 2 + coord.x * longLeg - center.y
+                    },
+                    tilt
+                ),
                 screenCenter
             );
         },
@@ -189,6 +218,28 @@ var createHexView = function (fig) {
             );
             return hexagonOfCoordinates(size, pixelToCoord(center));
         };
+
+    that.pixelToCoord = function (fig) {
+        radius = fig.radius;
+        longLeg = fig.radius * Math.sqrt(3) / 2;
+
+        var center = fig.center,
+            pixel = fig.pixel,
+            tilt = fig.tilt;
+
+        console.log(fig);
+
+        var adjustedPixel = vector.subtract(pixel, screenCenter);
+
+        var adjusted = vector.add(
+            rotate(adjustedPixel, -tilt),
+            rotate(center, -tilt)
+        );
+
+        console.log(pixelToCoord(adjusted));
+
+        return pixelToCoord(adjusted);
+    };
 
     that.drawHexagonalGrid = function (fig) {
         radius = fig.radius;
@@ -220,7 +271,8 @@ var createHexController = function (fig) {
     var that = {},
         model = fig.model,
         view = fig.view,
-        center = { x: 0, y: 0 },
+        //board wigs out if everything is perfectly zero'd
+        center = { x: 1, y: 0 },
         velocity = { x: 0, y: 0 },
         tilt = 0,
         radius = 40,
@@ -238,21 +290,20 @@ var createHexController = function (fig) {
     that.tick = (function() {
         var lastCenter = { x: 0, y: 0 }, lastTilt, lastRadius;
         return function () {
-
-            if(
-                //lastCenter.x !== center.x ||
-                //lastCenter.y !== center.y ||
-                velocity.x !== 0 || velocity.y !== 0 ||
-                lastTilt !== tilt ||
-                lastRadius !== radius
-            ) {
-                center = addVector(center, velocity);
+            if(!(
+                velocity.x === 0 &&
+                velocity.y === 0 &&
+                lastTilt === tilt &&
+                lastRadius === radius
+            )) {
+                center = vector.add(center, velocity);
                 drawBoard();
+                //update last orientation
+                lastCenter.x = center.x;
+                lastCenter.y = center.y;
+                lastTilt = tilt;
+                lastRadius = radius;
             }
-            lastCenter.x = center.x;
-            lastCenter.y = center.y;
-            lastTilt = tilt;
-            lastRadius = radius;
         };
     }());
 
@@ -262,6 +313,15 @@ var createHexController = function (fig) {
 
     that.zoom = function (diff) {
         radius += radius + diff >= 25 && radius + diff <= 150 ? diff : 0;
+    };
+
+    that.coordAt = function (pixel) {
+        return view.pixelToCoord({
+            center: center,
+            tilt: tilt,
+            radius: radius,
+            pixel: pixel
+        });
     };
 
     that.borderScroll = (function () {
@@ -275,7 +335,7 @@ var createHexController = function (fig) {
         };
 
         return function (pixel) {
-            var direction = addVector(pixel, {
+            var direction = vector.add(pixel, {
                     x: -SCREEN.width / 2,
                     y: -SCREEN.height / 2
                 }),
@@ -285,7 +345,7 @@ var createHexController = function (fig) {
                     y: calculateBorderVelocity(direction.y, SCREEN.height)
                 };
 
-            velocity = toCartesian(addVector(
+            velocity = toCartesian(vector.add(
                 toPolar(untilted),
                 { radius: 0, theta: -tilt }
             ));
