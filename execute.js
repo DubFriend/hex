@@ -33,14 +33,17 @@ $(document).ready(function () {
     SCREEN.width = $canvas.width();
     SCREEN.height = $canvas.height();
 
-    var hex = createHexController({
-        model: createHexModel({
-            size: 50
-        }),
-        view: createHexView({
-            draw: createHexDraw($canvas[0].getContext('2d')),
-        })
+    var hexModel = createHexModel({ size: 50 });
+    var hexView = createHexView({
+        draw: createHexDraw($canvas[0].getContext('2d')),
     });
+
+    var hex = createHexController({
+        model: hexModel,
+        view: hexView
+    });
+
+    hexModel.subscribe('board', _.bind(hex.drawBoard, hex));
 
     var intervalRef;
 
@@ -48,6 +51,7 @@ $(document).ready(function () {
         if(intervalRef) {
             hex.borderScroll(getCursorCoord(event));
         }
+        hex.focus(hex.coordAt(getCursorCoord(event)));
     });
 
     $canvas.mouseleave(function () {
@@ -62,11 +66,6 @@ $(document).ready(function () {
         }
     });
 
-    $canvas.mousemove(function (event) {
-        if(intervalRef) {
-            hex.highlight(hex.coordAt(getCursorCoord(event)));
-        }
-    });
 
     $(document).keydown(function (event) {
         switch(event.keyCode) {

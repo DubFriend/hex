@@ -100,21 +100,48 @@ var hexagonOfCoordinates = function (size, center) {
 
 var createHexModel = function (fig) {
     'use strict';
-    var that = {},
+    var that = jsMessage.mixinPubSub(),
         size = fig.size,
         board = (function () {
             var board = {};
             _.each(hexagonOfCoordinates(size), function (coord) {
-                board[coord.x + ',' + coord.y] = null;
+                board[coord.x + ',' + coord.y] = {};
             });
             return board;
         }()),
+
+        publishBoard = function () {
+            that.publish('board', board);
+        },
 
         axialToCubic = function (axial) {};
 
     that.getBoard = function () {
         return board;
     };
+
+    that.focus = (function () {
+        var lastCoord = {};
+        return function (coord) {
+            var thisHex, lastHex;
+            if(!_.isEqual(coord, lastCoord)) {
+                thisHex = board[stringKey(coord)];
+                lastHex = board[stringKey(lastCoord)];
+
+                if(lastHex) {
+                    lastHex.focus = false;
+                }
+                if(thisHex) {
+                    thisHex.focus = true;
+                }
+
+                lastCoord = coord;
+                publishBoard();
+            }
+        };
+    }());
+
+
 
     return that;
 };
@@ -203,7 +230,8 @@ var createHexView = function (fig) {
         //returns coordinates of closest coordinates, pixel distance from the center.
         pixelToCoord = function (pixel) {
             var x = Math.round(pixel.x / (1.5 * radius)),
-                y = Math.round(-x / 2) + Math.round(pixel.y / (2 * longLeg));
+                //y = Math.round(-x / 2) + Math.round(pixel.y / (2 * longLeg));
+                y = Math.round(-x / 2 + pixel.y / (2 * longLeg));
             return { x: x, y: y };
         },
 
@@ -231,13 +259,13 @@ var createHexView = function (fig) {
 
         var shifted = vector.add(
             center,
-            vector.subtract(cursor, screenCenter)
+            rotate(vector.subtract(cursor, screenCenter), -tilt)
         );
 
         shifted.x *= -1;
         var coord = pixelToCoord(shifted);
 
-        console.log(coord);
+        //console.log(coord);
         return coord;
     };
 
@@ -246,16 +274,16 @@ var createHexView = function (fig) {
         longLeg = fig.radius * Math.sqrt(3) / 2;
         _.each(localCoord(fig.center), function (coord) {
             var pixel = coordToPixels(coord, fig.center, fig.tilt);
-            if(fig.board[stringKey(coord)] !== undefined && isPixelOnScreen(pixel)) {
+
+            var hexagon = fig.board[stringKey(coord)];
+
+            if(hexagon && isPixelOnScreen(pixel)) {
                 draw.hexagon({
                     center: pixel,
                     coord: coord,
                     radius: radius,
                     tilt: fig.tilt,
-                    //TODO : do this another way thats optimized...
-                    fill: _.find(fig.highlighted, function (val) {
-                        return _.isEqual(val, coord);
-                    }) ? 'red' : null
+                    fill: hexagon.focus ? 'red' : null
                 });
             }
         });
@@ -279,20 +307,17 @@ var createHexController = function (fig) {
         center = { x: 1, y: 0 },
         velocity = { x: 0, y: 0 },
         tilt = 0,
-        radius = 40,
+        radius = 40;
 
-        highlighted = [],
-
-        drawBoard = function () {
-            view.clear();
-            view.drawHexagonalGrid({
-                board: model.getBoard(),
-                center: center,
-                tilt: tilt,
-                radius: radius,
-                highlighted: highlighted
-            });
-        };
+    that.drawBoard = function (board) {
+        view.clear();
+        view.drawHexagonalGrid({
+            board: board,
+            center: center,
+            tilt: tilt,
+            radius: radius
+        });
+    };
 
     that.tick = (function() {
         var lastCenter = { x: 0, y: 0 }, lastTilt, lastRadius;
@@ -304,7 +329,7 @@ var createHexController = function (fig) {
                 lastRadius === radius
             )) {
                 center = vector.add(center, velocity);
-                drawBoard();
+                that.drawBoard(model.getBoard());
                 //update last orientation
                 lastCenter.x = center.x;
                 lastCenter.y = center.y;
@@ -314,8 +339,8 @@ var createHexController = function (fig) {
         };
     }());
 
-    that.highlight = function (coord) {
-        highlighted.push(coord);
+    that.focus = function (coord) {
+        model.focus(coord);
     };
 
     that.rotate = function (diff) {
