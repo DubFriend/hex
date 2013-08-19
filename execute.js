@@ -62,6 +62,12 @@ $(document).ready(function () {
         }
     });
 
+    $canvas.mousemove(function (event) {
+        if(intervalRef) {
+            hex.highlight(hex.coordAt(getCursorCoord(event)));
+        }
+    });
+
     $(document).keydown(function (event) {
         switch(event.keyCode) {
             case 37: //left

@@ -38,14 +38,14 @@ var vector = (function () {
             return reduceVector(arguments, function (a, b) { return a * b; });
         },
 
-        negate: function (vector) {
+        negative: function (vector) {
             var negated = {};
             _.each(vector, function (val, key) { negated[key] = -val; });
             return negated;
         },
 
         subtract: function (a, b) {
-            return this.add(a, this.negate(b));
+            return this.add(a, this.negative(b));
         }
     };
 }());
@@ -219,26 +219,26 @@ var createHexView = function (fig) {
             return hexagonOfCoordinates(size, pixelToCoord(center));
         };
 
+
+
     that.pixelToCoord = function (fig) {
-        radius = fig.radius;
+        radius =- fig.radius;
         longLeg = fig.radius * Math.sqrt(3) / 2;
 
         var center = fig.center,
-            pixel = fig.pixel,
+            cursor = fig.pixel,
             tilt = fig.tilt;
 
-        console.log(fig);
-
-        var adjustedPixel = vector.subtract(pixel, screenCenter);
-
-        var adjusted = vector.add(
-            rotate(adjustedPixel, -tilt),
-            rotate(center, -tilt)
+        var shifted = vector.add(
+            center,
+            vector.subtract(cursor, screenCenter)
         );
 
-        console.log(pixelToCoord(adjusted));
+        shifted.x *= -1;
+        var coord = pixelToCoord(shifted);
 
-        return pixelToCoord(adjusted);
+        console.log(coord);
+        return coord;
     };
 
     that.drawHexagonalGrid = function (fig) {
@@ -251,7 +251,11 @@ var createHexView = function (fig) {
                     center: pixel,
                     coord: coord,
                     radius: radius,
-                    tilt: fig.tilt
+                    tilt: fig.tilt,
+                    //TODO : do this another way thats optimized...
+                    fill: _.find(fig.highlighted, function (val) {
+                        return _.isEqual(val, coord);
+                    }) ? 'red' : null
                 });
             }
         });
@@ -277,13 +281,16 @@ var createHexController = function (fig) {
         tilt = 0,
         radius = 40,
 
+        highlighted = [],
+
         drawBoard = function () {
             view.clear();
             view.drawHexagonalGrid({
                 board: model.getBoard(),
                 center: center,
                 tilt: tilt,
-                radius: radius
+                radius: radius,
+                highlighted: highlighted
             });
         };
 
@@ -306,6 +313,10 @@ var createHexController = function (fig) {
             }
         };
     }());
+
+    that.highlight = function (coord) {
+        highlighted.push(coord);
+    };
 
     that.rotate = function (diff) {
         tilt += toRadian(diff);
