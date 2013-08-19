@@ -1,0 +1,92 @@
+var parseKey = function (stringKey) {
+    var numbers = stringKey.split(',');
+    return {
+        x: Number(numbers[0]),
+        y: Number(numbers[1])
+    };
+};
+
+var stringKey = function (objectKey) {
+    return objectKey.x + ',' + objectKey.y;
+};
+
+var vector = (function () {
+    'use strict';
+
+    var reduceVector = function (collection, reduceFunction) {
+        return _.reduce(collection, function (memo, vector) {
+            var combined = {};
+            _.each(vector, function (val, key) {
+                combined[key] = reduceFunction(val, memo[key]);
+            });
+            return combined;
+        });
+    };
+
+    return {
+        add: function () {
+            return reduceVector(arguments, function (a, b) { return a + b; });
+        },
+
+        dotProduct: function () {
+            return reduceVector(arguments, function (a, b) { return a * b; });
+        },
+
+        negative: function (vector) {
+            var negated = {};
+            _.each(vector, function (val, key) { negated[key] = -val; });
+            return negated;
+        },
+
+        subtract: function (a, b) {
+            return this.add(a, this.negative(b));
+        }
+    };
+}());
+
+//note: sign(0) === 1
+var sign = function (x) {
+    return x < 0 ? -1 : 1;
+};
+
+var toPolar = function (cartesian) {
+    var x = cartesian.x, y = cartesian.y,
+        theta = Math.abs(x) > 0.001 ? Math.atan(y/x) : Math.PI / 2 * -sign(y);
+
+    theta += x <= 0 && y <= 0 || x <= 0 && y > 0 ? Math.PI : 0;
+
+    return {
+        radius: Math.sqrt(x * x + y * y),
+        theta: theta
+    };
+};
+
+var toCartesian = function (polar) {
+    return {
+        x: polar.radius * Math.cos(polar.theta),
+        y: polar.radius * Math.sin(polar.theta)
+    };
+};
+
+var toRadian = function (deg) {
+    return Math.PI * deg / 180;
+};
+
+var toDegree = function (rad) {
+    return 180 * rad / Math.PI;
+};
+
+//returns axial coordinates of dimensions +-size for both axies (0 indexed)
+var hexagonOfCoordinates = function (size, center) {
+    'use strict';
+    center = center || { x: 0, y: 0 };
+    var coords = [];
+    _.each(_.range(1 + center.x - size, center.x + size), function (x) {
+        _.each(_.range(1 + center.y - size, center.y + size), function (y) {
+            if(Math.abs(x - center.x + y - center.y) < size) {
+                coords.push({ x: x, y: y });
+            }
+        });
+    });
+    return coords;
+};
