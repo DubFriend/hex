@@ -77,7 +77,7 @@ var createHexView = function (fig) {
                     coord: coord,
                     radius: radius,
                     tilt: fig.tilt,
-                    fill: hexagon.focus ? 'red' : null
+                    fill: hexagon.focus ? 'green' : null
                 });
             }
         });
