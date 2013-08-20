@@ -7,6 +7,7 @@ var createHexModel = function (fig) {
             _.each(hexagonOfCoordinates(size), function (coord) {
                 board[coord.x + ',' + coord.y] = {};
             });
+            board['0,0'].height = 1;
             return board;
         }()),
 

@@ -76,6 +76,25 @@ var toDegree = function (rad) {
     return 180 * rad / Math.PI;
 };
 
+var eachToMap = function (arrayOfKeys, callback) {
+    var map = {};
+    _.each(arrayOfKeys, function (key) {
+        map[key] = callback(key);
+    });
+    return map;
+};
+
+var neighborCoord = function (coord) {
+    return [
+        { x: coord.x, y: coord.y + 1 },
+        { x: coord.x, y: coord.y -1 },
+        { x: coord.x + 1, y: coord.y },
+        { x: coord.x + 1, y: coord.y - 1 },
+        { x: coord.x - 1, y: coord.y },
+        { x: coord.x - 1, y: coord.y + 1}
+    ];
+};
+
 //returns axial coordinates of dimensions +-size for both axies (0 indexed)
 var hexagonOfCoordinates = function (size, center) {
     'use strict';

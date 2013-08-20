@@ -1,7 +1,2 @@
-
-//return public api here.
-return {
-
-};
-
+return PUBLIC_API;
 }());

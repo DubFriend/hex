@@ -152,11 +152,14 @@ var createHexModel = function (fig) {
 //rendering only
 var createHexDraw = function (ctx) {
     'use strict';
-    var that = {};
+    var that = {},
+        radius,
+        tilt,
+        moves = [];
 
     that.hexagon = (function () {
 
-        var radius, tilt, moves = [];
+        //var radius, tilt, moves = [];
 
         return function (fig) {
             var x = fig.center.x,
@@ -188,8 +191,16 @@ var createHexDraw = function (ctx) {
             ctx.stroke();
             //note: text is super slow on firefox.
             ctx.strokeText(fig.coord.x + ", " + fig.coord.y, x, y);
+
+            /*ctx.fillStyle = fig.fill || 'rgb(0, 71, 111)';
+            ctx.beginPath();
+            ctx.arc(x, y, fig.radius/2, 0, Math.PI*2, true);
+            ctx.closePath();
+            ctx.fill();*/
         };
     }());
+
+    that.circle = function
 
     that.clear = function () {
         ctx.clearRect(0, 0, SCREEN.width, SCREEN.height);

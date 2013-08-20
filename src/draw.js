@@ -9,7 +9,7 @@ var createHexDraw = function (ctx) {
 
         return function (fig) {
             var x = fig.center.x,
-                y = fig.center.y;
+                y = fig.center.y - fig.height * radius / 4;
 
             //caching calculations
             if(fig.radius !== radius || fig.tilt !== tilt) {
@@ -18,7 +18,7 @@ var createHexDraw = function (ctx) {
                 moves = _.map(_.range(0, 2*Math.PI, Math.PI/3), function (deg) {
                     return {
                         x: Math.cos(deg + tilt) * radius,
-                        y: Math.sin(deg + tilt) * radius
+                        y: Math.sin(deg + tilt) * radius / 1.5
                     };
                 });
             }

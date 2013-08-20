@@ -1,12 +1,13 @@
 var createHexEventManager = function (fig) {
     'use strict';
+    fig = fig || {};
     var that = {},
         $canvas = fig.$canvas,
         $startButton = fig.$startButton,
         $stopButton = fig.$stopButton,
         intervalRef,
         hex = fig.hex,
-        canvasEvents = {},
+        //canvasEvents = {},
 
         getCursorCoord = function (e) {
             var targ, x, y;
@@ -41,6 +42,7 @@ var createHexEventManager = function (fig) {
         clearInterval(intervalRef);
         intervalRef = null;
     };
+
 
     $canvas.mousemove(function (event) {
         if(intervalRef) {

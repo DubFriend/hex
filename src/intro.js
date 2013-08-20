@@ -1,1 +1,1 @@
-var hex = (function () {
+var createHex = (function () {

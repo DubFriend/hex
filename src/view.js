@@ -40,14 +40,14 @@ var createHexView = function (fig) {
 
         localCoord = function (center) {
             var size = Math.floor(
-                (_.max([SCREEN.width, SCREEN.height]) / (radius * 1.5)) / 2 + 4
+                (_.max([SCREEN.width, SCREEN.height]) / (radius * 1.5)) / 2 + 8
             );
             return hexagonOfCoordinates(size, pixelToCoord(center));
         };
 
     that.pixelToCoord = function (fig) {
         radius =- fig.radius;
-        longLeg = fig.radius * Math.sqrt(3) / 2;
+        longLeg = fig.radius * Math.sqrt(3) / 3;
 
         var center = fig.center,
             cursor = fig.pixel,
@@ -65,10 +65,9 @@ var createHexView = function (fig) {
 
     that.drawHexagonalGrid = function (fig) {
         radius = fig.radius;
-        longLeg = fig.radius * Math.sqrt(3) / 2;
+        longLeg = fig.radius * Math.sqrt(3) / 3;
         _.each(localCoord(fig.center), function (coord) {
             var pixel = coordToPixels(coord, fig.center, fig.tilt);
-
             var hexagon = fig.board[stringKey(coord)];
 
             if(hexagon && isPixelOnScreen(pixel)) {
@@ -77,6 +76,13 @@ var createHexView = function (fig) {
                     coord: coord,
                     radius: radius,
                     tilt: fig.tilt,
+                    height: hexagon.height || 0,
+                    neighborHeight: eachToMap(
+                        _.map(neighborCoord(coord), stringKey),
+                        function (key) {
+                            return fig.board[key].height || 0;
+                        }
+                    ),
                     fill: hexagon.focus ? 'green' : null
                 });
             }
