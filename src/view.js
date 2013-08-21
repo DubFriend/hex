@@ -7,6 +7,11 @@ var createHexView = function (fig) {
         longLeg = null,
         screenCenter = { x: SCREEN.width / 2, y: SCREEN.height / 2 },
 
+
+
+
+
+
         rotate = function (cartesian, tilt) {
             return toCartesian(vector.add(
                 toPolar(cartesian), { radius: 0, theta: tilt }
@@ -45,6 +50,22 @@ var createHexView = function (fig) {
             return hexagonOfCoordinates(size, pixelToCoord(center));
         };
 
+
+
+
+    //just experimenting, refactor.
+    var facesImg = new Image();
+    facesImg.src = 'faces.png';
+    var facesCoord = [
+        { x: 7, y: 4 }, { x: 7, y: 163 },
+        { x: 126, y: 4 }, { x: 126, y: 163 },
+        { x: 245, y: 4 }, { x: 245, y: 163 },
+        { x: 364, y: 4 }, { x: 364, y: 163 },
+        { x: 483, y: 4 }
+    ];
+
+
+
     that.pixelToCoord = function (fig) {
         radius =- fig.radius;
         longLeg = fig.radius * Math.sqrt(3) / 3;
@@ -66,12 +87,27 @@ var createHexView = function (fig) {
     that.drawHexagonalGrid = function (fig) {
         radius = fig.radius;
         longLeg = fig.radius * Math.sqrt(3) / 3;
+
+
+
+
+        //draw.beginPath();
         _.each(localCoord(fig.center), function (coord) {
             var pixel = coordToPixels(coord, fig.center, fig.tilt);
             var hexagon = fig.board[stringKey(coord)];
 
             if(hexagon && isPixelOnScreen(pixel)) {
-                draw.hexagon({
+                draw.image({
+                    image: facesImg,
+                    coord: pixel,
+                    clip: {
+                        coord: hexagon.clipCoord,//facesCoord[_.random(facesCoord.length - 1)],
+                        //coord: { x: 7, y: 4 },
+                        width: { x: 100, y: 100 }
+                    },
+                    width: { x: radius, y: radius }
+                });
+                /*draw.hexagon({
                     center: pixel,
                     coord: coord,
                     radius: radius,
@@ -84,9 +120,10 @@ var createHexView = function (fig) {
                         }
                     ),
                     fill: hexagon.focus ? 'green' : null
-                });
+                });*/
             }
         });
+        //draw.closePath();
     };
 
     that.clear = function () {

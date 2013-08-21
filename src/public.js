@@ -1,3 +1,4 @@
+
 //createHex is returned from the intro-outro closure, (code is in outro.js),
 //it is the only publicly available variable in the production version.
 var createHex = function (fig) {
@@ -13,6 +14,9 @@ var createHex = function (fig) {
 
     SCREEN.width = $canvas.width();
     SCREEN.height = $canvas.height();
+
+
+
 
     var model = createHexModel({ size: fig.size || 50 }),
         view = createHexView({

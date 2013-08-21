@@ -3,6 +3,8 @@ var createHexDraw = function (ctx) {
     'use strict';
     var that = {};
 
+
+
     that.hexagon = (function () {
 
         var radius, tilt, moves = [];
@@ -28,6 +30,7 @@ var createHexDraw = function (ctx) {
 
             ctx.beginPath();
             ctx.moveTo(x + moves[0].x, y + moves[0].y);
+            //moves.pop();
             _.each(_.rest(moves), function (move) {
                 ctx.lineTo(x + move.x, y + move.y);
             });
@@ -39,6 +42,25 @@ var createHexDraw = function (ctx) {
             ctx.strokeText(fig.coord.x + ", " + fig.coord.y, x, y);
         };
     }());
+
+    that.image = function (fig) {
+        var args = [fig.image];
+
+        if(fig.clip) {
+            args.push(
+                fig.clip.coord.x, fig.clip.coord.y,
+                fig.clip.width.x, fig.clip.width.y
+            );
+        }
+
+        args.push(fig.coord.x, fig.coord.y);
+
+        if(fig.width) {
+            args.push(fig.width.x, fig.width.y);
+        }
+
+        ctx.drawImage.apply(ctx, args);
+    };
 
     that.clear = function () {
         ctx.clearRect(0, 0, SCREEN.width, SCREEN.height);

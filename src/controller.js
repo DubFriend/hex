@@ -7,7 +7,7 @@ var createHexController = function (fig) {
         center = { x: 1, y: 0 },
         velocity = { x: 0, y: 0 },
         tilt = 0,
-        radius = 40;
+        radius = 60;
 
     that.drawBoard = function (board) {
         view.clear();
