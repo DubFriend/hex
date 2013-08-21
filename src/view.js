@@ -7,28 +7,17 @@ var createHexView = function (fig) {
         longLeg = null,
         screenCenter = { x: SCREEN.width / 2, y: SCREEN.height / 2 },
 
-
-
-
-
-
-        rotate = function (cartesian, tilt) {
+        /*rotate = function (cartesian, tilt) {
             return toCartesian(vector.add(
                 toPolar(cartesian), { radius: 0, theta: tilt }
             ));
-        },
+        },*/
 
         coordToPixels = function (coord, center, tilt) {
-            return vector.add(
-                rotate(
-                    {
-                        x: coord.x * 1.5 * radius - center.x,
-                        y: coord.y * longLeg * 2 + coord.x * longLeg - center.y
-                    },
-                    tilt
-                ),
-                screenCenter
-            );
+            return {
+                x: coord.x * 1.5 * radius - center.x + screenCenter.x,
+                y: coord.y * longLeg * 2 + coord.x * longLeg - center.y + screenCenter.y
+            };
         },
 
         //returns coordinates of closest coordinates, pixel distance from the center.
@@ -52,17 +41,9 @@ var createHexView = function (fig) {
 
 
 
-
     //just experimenting, refactor.
     var facesImg = new Image();
     facesImg.src = 'faces.png';
-    var facesCoord = [
-        { x: 7, y: 4 }, { x: 7, y: 163 },
-        { x: 126, y: 4 }, { x: 126, y: 163 },
-        { x: 245, y: 4 }, { x: 245, y: 163 },
-        { x: 364, y: 4 }, { x: 364, y: 163 },
-        { x: 483, y: 4 }
-    ];
 
 
 
@@ -75,7 +56,7 @@ var createHexView = function (fig) {
             tilt = fig.tilt,
             shifted = vector.add(
                 center,
-                rotate(vector.subtract(cursor, screenCenter), -tilt)
+                vector.subtract(cursor, screenCenter)//rotate(vector.subtract(cursor, screenCenter), -tilt)
             );
 
         shifted.x *= -1;
@@ -88,10 +69,6 @@ var createHexView = function (fig) {
         radius = fig.radius;
         longLeg = fig.radius * Math.sqrt(3) / 3;
 
-
-
-
-        //draw.beginPath();
         _.each(localCoord(fig.center), function (coord) {
             var pixel = coordToPixels(coord, fig.center, fig.tilt);
             var hexagon = fig.board[stringKey(coord)];
@@ -99,31 +76,28 @@ var createHexView = function (fig) {
             if(hexagon && isPixelOnScreen(pixel)) {
                 draw.image({
                     image: facesImg,
-                    coord: pixel,
+                    coord: {
+                        x: pixel.x - radius/2,
+                        y: pixel.y - radius/2
+                    },
                     clip: {
-                        coord: hexagon.clipCoord,//facesCoord[_.random(facesCoord.length - 1)],
-                        //coord: { x: 7, y: 4 },
+                        coord: hexagon.clipCoord,
                         width: { x: 100, y: 100 }
                     },
                     width: { x: radius, y: radius }
                 });
-                /*draw.hexagon({
-                    center: pixel,
-                    coord: coord,
-                    radius: radius,
-                    tilt: fig.tilt,
-                    height: hexagon.height || 0,
-                    neighborHeight: eachToMap(
-                        _.map(neighborCoord(coord), stringKey),
-                        function (key) {
-                            return fig.board[key].height || 0;
-                        }
-                    ),
-                    fill: hexagon.focus ? 'green' : null
-                });*/
+                if(hexagon.focus) {
+                    draw.hexagon({
+                        center: pixel,
+                        coord: coord,
+                        radius: radius,
+                        //tilt: fig.tilt,
+                        height: hexagon.height || 0,
+                        stroke: 'rgb(34, 245, 219)'
+                    });
+                }
             }
         });
-        //draw.closePath();
     };
 
     that.clear = function () {

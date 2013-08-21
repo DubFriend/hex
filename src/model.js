@@ -9,8 +9,6 @@ var createHexModel = function (fig) {
         { x: 483, y: 4 }
     ];
 
-
-
     var that = jsMessage.mixinPubSub(),
         size = fig.size,
         board = (function () {
@@ -20,11 +18,6 @@ var createHexModel = function (fig) {
                     clipCoord: facesCoord[_.random(facesCoord.length - 1)]
                 };
             });
-
-
-
-
-            //board['0,0'].height = 1;
             return board;
         }()),
 

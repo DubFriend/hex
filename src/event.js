@@ -31,11 +31,9 @@ var createHexEventManager = function (fig) {
         };
 
     that.start = function () {
-        if(!intervalRef) {
-            intervalRef = setInterval(function () {
-                hex.tick();
-            }, 16);
-        }
+        hex.tick();
+        requestAnimationFrame(_.bind(that.start, start));
+        intervalRef = true;
     };
 
     that.stop = function () {
