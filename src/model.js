@@ -16,7 +16,15 @@ var createHexModel = function (fig) {
     darkHexagonImg.src = 'hexagon_dark.png';
     facesImg.src = 'faces.png';
 
+    var image = {
+        lightHexagon: new Image(),
+        darkHexagon: new Image(),
+        faces: new Image()
+    };
 
+    _.each(image, function (image, key) {
+
+    });
 
 
     var that = jsMessage.mixinPubSub(),

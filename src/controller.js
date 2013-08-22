@@ -8,9 +8,10 @@ var createHexController = function (fig) {
         velocity = { x: 0, y: 0 },
         tilt = 0,
         radius = 60,
-        ZOOM = {
+        zoom = {
             min: fig.minZoom || 25,
-            max: fig.maxZoom || 150
+            max: fig.maxZoom || 150,
+            diff: 0
         };
 
     that.drawBoard = function (board) {
@@ -26,6 +27,7 @@ var createHexController = function (fig) {
     that.tick = (function() {
         var lastCenter = { x: 0, y: 0 }, lastTilt, lastRadius;
         return function () {
+            radius += zoom.diff;
             if(!(
                 velocity.x === 0 &&
                 velocity.y === 0 &&
@@ -48,7 +50,7 @@ var createHexController = function (fig) {
     };
 
     that.zoom = function (diff) {
-        radius += radius + diff >= ZOOM.min && radius + diff <= ZOOM.max ? diff : 0;
+        zoom.diff = radius + diff >= zoom.min && radius + diff <= zoom.max ? diff : 0;
     };
 
     that.coordAt = function (pixel) {
@@ -61,14 +63,6 @@ var createHexController = function (fig) {
     };
 
     that.borderScroll = (function () {
-        /*var calculateBorderVelocity = function (direction, length) {
-            if(Math.abs(direction) > length / 2.8) {
-                return sign(direction) * (Math.abs(direction)-length/2.8)/7;
-            }
-            else {
-                return 0;
-            }
-        };*/
 
         var calculateBorderVelocity = function (pixel) {
             var scrollZone = {
@@ -91,33 +85,13 @@ var createHexController = function (fig) {
             else {
                 return { x: 0, y: 0 };
             }
-
-            /*if(
-                Math.abs(pixel.x) > scrollZone.x ||
-                Math.abs(pixel.y) > scrollZone.y
-            ) {
-                return {
-
-
-                }
-            }*/
         };
 
         return function (pixel) {
-            var direction = vector.add(
-                pixel,
-                {
-                    x: -SCREEN.width / 2,
-                    y: -SCREEN.height / 2
-                }
-            );
-
-
-            velocity = calculateBorderVelocity(direction);
-            /*velocity = {
-                x: calculateBorderVelocity(direction.x, SCREEN.width),
-                y: calculateBorderVelocity(direction.y, SCREEN.height)
-            };*/
+            velocity = calculateBorderVelocity({
+                x: pixel.x - SCREEN.width / 2,
+                y: pixel.y - SCREEN.height / 2
+            });
         };
     }());
 

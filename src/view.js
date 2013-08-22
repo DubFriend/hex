@@ -79,7 +79,7 @@ var createHexView = function (fig) {
                         lineWidth: 7,
                         radius: radius,
                         height: hexagon.height || 0,
-                        stroke: 'rgb(219, 69, 219)'
+                        stroke: 'rgb(255, 92, 40)'
                     });
                 }
             }

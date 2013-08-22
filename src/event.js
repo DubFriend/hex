@@ -6,28 +6,7 @@ var createHexEventManager = function (fig) {
         $startButton = fig.$startButton,
         $stopButton = fig.$stopButton,
         intervalRef,
-        hex = fig.hex,
-
-        getCursorCoord = function (e) {
-            var targ, x, y;
-            if(!e) {
-                e = window.event;
-            }
-            if(e.target) {
-                targ = e.target;
-            }
-            else if(e.srcElement) {
-                targ = e.srcElement;
-            }
-            if(targ.nodeType == 3) {
-                targ = targ.parentNode;
-            }
-
-            x = e.pageX - $(targ).offset().left;
-            y = e.pageY - $(targ).offset().top;
-
-            return { x : x, y: y };
-        };
+        hex = fig.hex;
 
     that.start = function () {
         hex.tick();
@@ -40,40 +19,44 @@ var createHexEventManager = function (fig) {
         intervalRef = null;
     };
 
-    $canvas.mousemove(function (event) {
-        if(intervalRef) {
-            hex.borderScroll(getCursorCoord(event));
-        }
-        hex.focus(hex.coordAt(getCursorCoord(event)));
-    });
+    $canvas.mousemove(fig.mouseMove);
 
-    $canvas.mouseleave(function () {
-        if(intervalRef) {
-            hex.borderScroll({ x: SCREEN.width / 2, y: SCREEN.height / 2 });
-        }
-    });
+    $canvas.mouseleave(fig.mouseLeave);
 
-    $canvas.click(function (event) {
-        hex.coordAt(getCursorCoord(event));
-    });
+    $canvas.click(fig.click);
 
     $(document).keydown(function (event) {
         switch(event.keyCode) {
             case KEY.left:
-                //hex.rotate(-1);
-                break;
-            case KEY.up:
-                hex.zoom(1);
                 break;
             case KEY.right:
-                //hex.rotate(1);
+                break;
+            case KEY.up:
+                fig.key.up.down();
                 break;
             case KEY.down:
-                hex.zoom(-1);
+                fig.key.down.down();
                 break;
         }
         return false;
     });
+
+    $(document).keyup(function (event) {
+        switch(event.keyCode) {
+            case KEY.left:
+                break;
+            case KEY.right:
+                break;
+            case KEY.up:
+                fig.key.up.up();
+                break;
+            case KEY.down:
+                fig.key.down.up();
+                break;
+        }
+        return false;
+    });
+
 
     $startButton.click(_.bind(that.start, that));
 
