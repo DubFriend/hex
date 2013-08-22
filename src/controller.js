@@ -27,7 +27,7 @@ var createHexController = function (fig) {
     that.tick = (function() {
         var lastCenter = { x: 0, y: 0 }, lastTilt, lastRadius;
         return function () {
-            radius += zoom.diff;
+            radius += radius + zoom.diff >= zoom.min && radius + zoom.diff <= zoom.max ? zoom.diff : 0;
             if(!(
                 velocity.x === 0 &&
                 velocity.y === 0 &&
