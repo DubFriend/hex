@@ -109,24 +109,3 @@ var hexagonOfCoordinates = function (size, center) {
     });
     return coords;
 };
-
-var getCursorCoord = function (e) {
-    var targ, x, y;
-    if(!e) {
-        e = window.event;
-    }
-    if(e.target) {
-        targ = e.target;
-    }
-    else if(e.srcElement) {
-        targ = e.srcElement;
-    }
-    if(targ.nodeType == 3) {
-        targ = targ.parentNode;
-    }
-
-    x = e.pageX - $(targ).offset().left;
-    y = e.pageY - $(targ).offset().top;
-
-    return { x : x, y: y };
-};

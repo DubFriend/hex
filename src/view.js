@@ -10,7 +10,8 @@ var createHexView = function (fig) {
         coordToPixels = function (coord, center, tilt) {
             return {
                 x: coord.x * 1.5 * radius - center.x + screenCenter.x,
-                y: (coord.y * longLeg * 2 - center.y + coord.x * longLeg /*- center.y*/ + screenCenter.y)
+                y: (coord.y * longLeg * 2 - center.y + screenCenter.y +
+                    coord.x * longLeg)
             };
         },
 

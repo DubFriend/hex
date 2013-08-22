@@ -6,24 +6,39 @@ var createHexEventManager = function (fig) {
         $startButton = fig.$startButton,
         $stopButton = fig.$stopButton,
         intervalRef,
-        hex = fig.hex;
+        hex = fig.hex,
+
+        getCursorCoord = function (e) {
+            var targ, x, y;
+            if(!e) {
+                e = window.event;
+            }
+            if(e.target) {
+                targ = e.target;
+            }
+            else if(e.srcElement) {
+                targ = e.srcElement;
+            }
+            if(targ.nodeType == 3) {
+                targ = targ.parentNode;
+            }
+
+            x = e.pageX - $(targ).offset().left;
+            y = e.pageY - $(targ).offset().top;
+
+            return { x : x, y: y };
+        };
 
     that.start = function () {
         hex.tick();
         requestAnimationFrame(_.bind(that.start, that));
-        intervalRef = true;
     };
 
-    that.stop = function () {
-        clearInterval(intervalRef);
-        intervalRef = null;
-    };
+    $canvas.mousemove(_.compose(fig.mouseMove, getCursorCoord));
 
-    $canvas.mousemove(fig.mouseMove);
+    $canvas.mouseleave(_.compose(fig.mouseLeave, getCursorCoord));
 
-    $canvas.mouseleave(fig.mouseLeave);
-
-    $canvas.click(fig.click);
+    $canvas.click(_.compose(fig.click, getCursorCoord));
 
     $(document).keydown(function (event) {
         switch(event.keyCode) {
@@ -37,6 +52,8 @@ var createHexEventManager = function (fig) {
             case KEY.down:
                 fig.key.down.down();
                 break;
+            default:
+                console.log('unrecognized key');
         }
         return false;
     });
@@ -57,10 +74,7 @@ var createHexEventManager = function (fig) {
         return false;
     });
 
-
     $startButton.click(_.bind(that.start, that));
-
-    $stopButton.click(_.bind(that.stop, that));
 
     return that;
 };

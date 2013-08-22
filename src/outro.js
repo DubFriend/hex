@@ -1,2 +1,3 @@
-return PUBLIC_API;
+//defined in public.js
+return createHex;
 }());

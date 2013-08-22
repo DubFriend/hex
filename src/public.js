@@ -1,4 +1,3 @@
-
 //createHex is returned from the intro-outro closure, (code is in outro.js),
 //it is the only publicly available variable in the production version.
 var createHex = function (fig) {
@@ -28,16 +27,20 @@ var createHex = function (fig) {
             $startButton: fig.$start || $('#start'),
             $stopButton: fig.$stop || $('#stop'),
             hex: hex,
-            mouseMove: fig.mouseMove || function (event) {
-                hex.borderScroll(getCursorCoord(event));
-                hex.focus(hex.coordAt(getCursorCoord(event)));
+
+            mouseMove: fig.mouseMove || function (coord) {
+                hex.borderScroll(coord);
+                hex.focus(hex.coordAt(coord));
             },
-            mouseLeave: fig.mouseLeave || function (event) {
+
+            mouseLeave: fig.mouseLeave || function (coord) {
                 hex.borderScroll({ x: SCREEN.width / 2, y: SCREEN.height / 2 });
             },
-            click: fig.click || function (event) {
-                console.log(hex.coordAt(getCursorCoord(event)));
+
+            click: fig.click || function (coord) {
+                console.log(hex.coordAt(coord));
             },
+
             key: fig.key || {
                 up: {
                     down: _.partial(hex.zoom, 1),
