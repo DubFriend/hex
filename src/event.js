@@ -7,7 +7,6 @@ var createHexEventManager = function (fig) {
         $stopButton = fig.$stopButton,
         intervalRef,
         hex = fig.hex,
-        //canvasEvents = {},
 
         getCursorCoord = function (e) {
             var targ, x, y;
@@ -32,7 +31,7 @@ var createHexEventManager = function (fig) {
 
     that.start = function () {
         hex.tick();
-        requestAnimationFrame(_.bind(that.start, start));
+        requestAnimationFrame(_.bind(that.start, that));
         intervalRef = true;
     };
 
@@ -40,7 +39,6 @@ var createHexEventManager = function (fig) {
         clearInterval(intervalRef);
         intervalRef = null;
     };
-
 
     $canvas.mousemove(function (event) {
         if(intervalRef) {
@@ -62,13 +60,13 @@ var createHexEventManager = function (fig) {
     $(document).keydown(function (event) {
         switch(event.keyCode) {
             case KEY.left:
-                hex.rotate(-1);
+                //hex.rotate(-1);
                 break;
             case KEY.up:
                 hex.zoom(1);
                 break;
             case KEY.right:
-                hex.rotate(1);
+                //hex.rotate(1);
                 break;
             case KEY.down:
                 hex.zoom(-1);

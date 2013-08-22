@@ -1,6 +1,7 @@
 var createHexModel = function (fig) {
     'use strict';
 
+    //just experimenting, refactor.
     var facesCoord = [
         { x: 7, y: 4 }, { x: 7, y: 163 },
         { x: 126, y: 4 }, { x: 126, y: 163 },
@@ -8,6 +9,15 @@ var createHexModel = function (fig) {
         { x: 364, y: 4 }, { x: 364, y: 163 },
         { x: 483, y: 4 }
     ];
+    var facesImg = new Image(),
+        lightHexagonImg = new Image(),
+        darkHexagonImg = new Image();
+    lightHexagonImg.src = 'hexagon_light.png';
+    darkHexagonImg.src = 'hexagon_dark.png';
+    facesImg.src = 'faces.png';
+
+
+
 
     var that = jsMessage.mixinPubSub(),
         size = fig.size,
@@ -15,7 +25,8 @@ var createHexModel = function (fig) {
             var board = {};
             _.each(hexagonOfCoordinates(size), function (coord) {
                 board[coord.x + ',' + coord.y] = {
-                    clipCoord: facesCoord[_.random(facesCoord.length - 1)]
+                    clipCoord: facesCoord[_.random(facesCoord.length - 1)],
+                    image: _.random(1) ? lightHexagonImg : darkHexagonImg
                 };
             });
             return board;

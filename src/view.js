@@ -7,16 +7,10 @@ var createHexView = function (fig) {
         longLeg = null,
         screenCenter = { x: SCREEN.width / 2, y: SCREEN.height / 2 },
 
-        /*rotate = function (cartesian, tilt) {
-            return toCartesian(vector.add(
-                toPolar(cartesian), { radius: 0, theta: tilt }
-            ));
-        },*/
-
         coordToPixels = function (coord, center, tilt) {
             return {
                 x: coord.x * 1.5 * radius - center.x + screenCenter.x,
-                y: coord.y * longLeg * 2 + coord.x * longLeg - center.y + screenCenter.y
+                y: (coord.y * longLeg * 2 - center.y + coord.x * longLeg /*- center.y*/ + screenCenter.y)
             };
         },
 
@@ -40,13 +34,6 @@ var createHexView = function (fig) {
         };
 
 
-
-    //just experimenting, refactor.
-    var facesImg = new Image();
-    facesImg.src = 'faces.png';
-
-
-
     that.pixelToCoord = function (fig) {
         radius =- fig.radius;
         longLeg = fig.radius * Math.sqrt(3) / 3;
@@ -54,10 +41,7 @@ var createHexView = function (fig) {
         var center = fig.center,
             cursor = fig.pixel,
             tilt = fig.tilt,
-            shifted = vector.add(
-                center,
-                vector.subtract(cursor, screenCenter)//rotate(vector.subtract(cursor, screenCenter), -tilt)
-            );
+            shifted = vector.add(center, vector.subtract(cursor, screenCenter));
 
         shifted.x *= -1;
         var coord = pixelToCoord(shifted);
@@ -74,26 +58,28 @@ var createHexView = function (fig) {
             var hexagon = fig.board[stringKey(coord)];
 
             if(hexagon && isPixelOnScreen(pixel)) {
+
                 draw.image({
-                    image: facesImg,
+                    image: hexagon.image,
                     coord: {
-                        x: pixel.x - radius/2,
-                        y: pixel.y - radius/2
+                        x: pixel.x - radius,
+                        y: pixel.y - longLeg
                     },
                     clip: {
-                        coord: hexagon.clipCoord,
-                        width: { x: 100, y: 100 }
+                        coord: { x: 4, y: 0 },
+                        width: { x: 442, y: 388}
                     },
-                    width: { x: radius, y: radius }
+                    width: { x: radius * 2, y: longLeg * 2 }
                 });
+
                 if(hexagon.focus) {
                     draw.hexagon({
                         center: pixel,
                         coord: coord,
+                        lineWidth: 7,
                         radius: radius,
-                        //tilt: fig.tilt,
                         height: hexagon.height || 0,
-                        stroke: 'rgb(34, 245, 219)'
+                        stroke: 'rgb(219, 69, 219)'
                     });
                 }
             }

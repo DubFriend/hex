@@ -5,26 +5,26 @@ var createHexDraw = function (ctx) {
 
     that.hexagon = (function () {
 
-        var radius, /*tilt,*/ moves = [];
+        var radius, moves = [];
 
         return function (fig) {
             var x = fig.center.x,
                 y = fig.center.y - fig.height * radius / 4;
 
             //caching calculations
-            if(fig.radius !== radius ) {//|| fig.tilt !== tilt) {
+            if(fig.radius !== radius ) {
                 radius = fig.radius;
-                //tilt = fig.tilt;
                 moves = _.map(_.range(0, 2*Math.PI, Math.PI/3), function (deg) {
                     return {
-                        x: Math.cos(deg /*+ tilt*/) * radius,
-                        y: Math.sin(deg /*+ tilt*/) * radius / 1.5
+                        x: Math.cos(deg) * radius,
+                        y: Math.sin(deg) * radius / 1.5
                     };
                 });
             }
 
             ctx.strokeStyle = fig.stroke || 'rgb(150, 150, 80)';
-            //ctx.fillStyle = fig.fill || 'rgb(0, 71, 111)';
+            ctx.font = 'normal 16px helvetica';
+            ctx.lineWidth = fig.lineWidth || 1;
 
             ctx.beginPath();
             ctx.moveTo(x + moves[0].x, y + moves[0].y);
@@ -33,9 +33,9 @@ var createHexDraw = function (ctx) {
             });
             ctx.closePath();
 
-            //ctx.fill();
             ctx.stroke();
-            //note: text is super slow on firefox.
+            //note: rendering text is slow
+            ctx.lineWidth = 1;
             ctx.strokeText(fig.coord.x + ", " + fig.coord.y, x, y);
         };
     }());

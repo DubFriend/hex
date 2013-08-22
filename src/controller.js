@@ -7,7 +7,11 @@ var createHexController = function (fig) {
         center = { x: 1, y: 0 },
         velocity = { x: 0, y: 0 },
         tilt = 0,
-        radius = 60;
+        radius = 60,
+        ZOOM = {
+            min: fig.minZoom || 25,
+            max: fig.maxZoom || 150
+        };
 
     that.drawBoard = function (board) {
         view.clear();
@@ -43,12 +47,8 @@ var createHexController = function (fig) {
         model.focus(coord);
     };
 
-    that.rotate = function (diff) {
-        tilt += toRadian(diff);
-    };
-
     that.zoom = function (diff) {
-        radius += radius + diff >= 25 && radius + diff <= 150 ? diff : 0;
+        radius += radius + diff >= ZOOM.min && radius + diff <= ZOOM.max ? diff : 0;
     };
 
     that.coordAt = function (pixel) {
@@ -61,30 +61,63 @@ var createHexController = function (fig) {
     };
 
     that.borderScroll = (function () {
-        var calculateBorderVelocity = function (direction, length) {
-            if(Math.abs(direction) > length / 6) {
-                return sign(direction) * (Math.abs(direction)-length/6)/20;
+        /*var calculateBorderVelocity = function (direction, length) {
+            if(Math.abs(direction) > length / 2.8) {
+                return sign(direction) * (Math.abs(direction)-length/2.8)/7;
             }
             else {
                 return 0;
             }
+        };*/
+
+        var calculateBorderVelocity = function (pixel) {
+            var scrollZone = {
+                x: SCREEN.width / 2.8,
+                y: SCREEN.height / 2.8
+            };
+
+            if(Math.abs(pixel.x) > scrollZone.x) {
+                return {
+                    x: sign(pixel.x) * (Math.abs(pixel.x) - scrollZone.x) / 7,
+                    y: pixel.y / 50
+                };
+            }
+            else if(Math.abs(pixel.y) > scrollZone.y) {
+                return {
+                    y: sign(pixel.y) * (Math.abs(pixel.y) - scrollZone.y) / 7,
+                    x: pixel.x / 50
+                };
+            }
+            else {
+                return { x: 0, y: 0 };
+            }
+
+            /*if(
+                Math.abs(pixel.x) > scrollZone.x ||
+                Math.abs(pixel.y) > scrollZone.y
+            ) {
+                return {
+
+
+                }
+            }*/
         };
 
         return function (pixel) {
-            var direction = vector.add(pixel, {
+            var direction = vector.add(
+                pixel,
+                {
                     x: -SCREEN.width / 2,
                     y: -SCREEN.height / 2
-                }),
+                }
+            );
 
-                untilted = {
-                    x: calculateBorderVelocity(direction.x, SCREEN.width),
-                    y: calculateBorderVelocity(direction.y, SCREEN.height)
-                };
 
-            velocity = toCartesian(vector.add(
-                toPolar(untilted),
-                { radius: 0, theta: -tilt }
-            ));
+            velocity = calculateBorderVelocity(direction);
+            /*velocity = {
+                x: calculateBorderVelocity(direction.x, SCREEN.width),
+                y: calculateBorderVelocity(direction.y, SCREEN.height)
+            };*/
         };
     }());
 
