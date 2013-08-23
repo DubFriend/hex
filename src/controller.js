@@ -6,8 +6,7 @@ var createHexController = function (fig) {
         //board wigs out if everything is perfectly zero'd
         center = { x: 1, y: 0 },
         velocity = { x: 0, y: 0 },
-        tilt = 0,
-        radius = 60,
+        radius = fig.radius || 60,
         zoom = {
             min: fig.minZoom || 25,
             max: fig.maxZoom || 150,
@@ -19,19 +18,17 @@ var createHexController = function (fig) {
         view.drawHexagonalGrid({
             board: board,
             center: center,
-            tilt: tilt,
             radius: radius
         });
     };
 
     that.tick = (function() {
-        var lastCenter = { x: 0, y: 0 }, lastTilt, lastRadius;
+        var lastCenter = { x: 0, y: 0 }, lastRadius;
         return function () {
             radius += radius + zoom.diff >= zoom.min && radius + zoom.diff <= zoom.max ? zoom.diff : 0;
             if(!(
                 velocity.x === 0 &&
                 velocity.y === 0 &&
-                lastTilt === tilt &&
                 lastRadius === radius
             )) {
                 center = vector.add(center, velocity);
@@ -39,7 +36,6 @@ var createHexController = function (fig) {
                 //update last orientation
                 lastCenter.x = center.x;
                 lastCenter.y = center.y;
-                lastTilt = tilt;
                 lastRadius = radius;
             }
         };
@@ -56,7 +52,6 @@ var createHexController = function (fig) {
     that.coordAt = function (pixel) {
         return view.pixelToCoord({
             center: center,
-            tilt: tilt,
             radius: radius,
             pixel: pixel
         });

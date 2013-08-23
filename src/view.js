@@ -3,11 +3,13 @@ var createHexView = function (fig) {
     'use strict';
     var that = {},
         draw = fig.draw,
+        focusColor = fig.focusColor || 'rgb(255, 92, 40)',
+        focusWidth = fig.focusWidth || 7,
         radius = null,
         longLeg = null,
         screenCenter = { x: SCREEN.width / 2, y: SCREEN.height / 2 },
 
-        coordToPixels = function (coord, center, tilt) {
+        coordToPixels = function (coord, center) {
             return {
                 x: coord.x * 1.5 * radius - center.x + screenCenter.x,
                 y: (coord.y * longLeg * 2 - center.y + screenCenter.y +
@@ -41,7 +43,6 @@ var createHexView = function (fig) {
 
         var center = fig.center,
             cursor = fig.pixel,
-            tilt = fig.tilt,
             shifted = vector.add(center, vector.subtract(cursor, screenCenter));
 
         shifted.x *= -1;
@@ -52,10 +53,10 @@ var createHexView = function (fig) {
 
     that.drawHexagonalGrid = function (fig) {
         radius = fig.radius;
-        longLeg = fig.radius * Math.sqrt(3) / 3;
+        longLeg = radius * Math.sqrt(3) / 3;
 
         _.each(localCoord(fig.center), function (coord) {
-            var pixel = coordToPixels(coord, fig.center, fig.tilt);
+            var pixel = coordToPixels(coord, fig.center);
             var hexagon = fig.board[stringKey(coord)];
 
             if(hexagon && isPixelOnScreen(pixel)) {
@@ -76,11 +77,10 @@ var createHexView = function (fig) {
                 if(hexagon.focus) {
                     draw.hexagon({
                         center: pixel,
-                        coord: coord,
-                        lineWidth: 7,
                         radius: radius,
-                        height: hexagon.height || 0,
-                        stroke: 'rgb(255, 92, 40)'
+                        coord: coord,
+                        color: focusColor,
+                        lineWidth: focusWidth
                     });
                 }
             }

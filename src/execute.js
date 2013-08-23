@@ -3,16 +3,24 @@ $(document).ready(function () {
 
     var hex = createHex({
         $gameWindow: $('#window'),
-        size: 50,
         canvasId: 'game-screen',
+
+        size: 50,
+
+        minZoom: 40,
+        maxZoom: 150,
+        radius: 70,
+
+        focusColor: 'orange',
+        focusWidth: 9,
 
         mouseMove: function (coord) {
             this.borderScroll(coord);
             this.focus(this.coordAt(coord));
         },
 
-        mouseLeave: function (coord) {
-            this.borderScroll({ x: SCREEN.width / 2, y: SCREEN.height / 2 });
+        mouseLeave: function () {
+            this.stopScroll();
         },
 
         click: function (coord) {
@@ -21,14 +29,17 @@ $(document).ready(function () {
 
         key: function (keyCode) {
             var keys = {};
+
             keys[keyCode.up] = {
-                down: _.partial(this.zoom, 1),
-                up: _.partial(this.zoom, 0)
+                down: this.zoomIn,
+                up: this.zoomStop
             };
+
             keys[keyCode.down] = {
-                down: _.partial(this.zoom, -1),
-                up: _.partial(this.zoom, 0)
+                down: this.zoomOut,
+                up: this.zoomStop
             };
+
             return keys;
         }
     });

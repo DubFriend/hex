@@ -22,9 +22,6 @@ var createHexModel = function (fig) {
         faces: new Image()
     };
 
-    _.each(image, function (image, key) {
-
-    });
 
 
     var that = jsMessage.mixinPubSub(),

@@ -16,14 +16,31 @@ var createHex = function (fig) {
 
     var model = createHexModel({ size: fig.size }),
         view = createHexView({
-            draw: createHexDraw($canvas[0].getContext('2d'))
+            draw: createHexDraw($canvas[0].getContext('2d')),
+            focusColor: fig.focusColor,
+            focusWidth: fig.focusWidth
         }),
-        hex = createHexController({ model: model, view: view });
+        hex = createHexController({
+            model: model,
+            view: view,
+            minZoom: fig.minZoom,
+            maxZoom: fig.maxZoom,
+            radius: fig.radius
+        });
 
     that.zoom = _.bind(hex.zoom, hex);
+    that.zoomIn = _.partial(that.zoom, 1);
+    that.zoomOut = _.partial(that.zoom, -1);
+    that.zoomStop = _.partial(that.zoom, 0);
+
     that.borderScroll = _.bind(hex.borderScroll, hex);
     that.focus = _.bind(hex.focus, hex);
     that.coordAt = _.bind(hex.coordAt, hex);
+
+    that.stopScroll = _.partial(hex.borderScroll, {
+        x: SCREEN.width / 2,
+        y: SCREEN.height / 2
+    });
 
     that.getHoverCoord = function () {};
     that.setTile = function (fig) {};

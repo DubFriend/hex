@@ -9,7 +9,7 @@ var createHexDraw = function (ctx) {
 
         return function (fig) {
             var x = fig.center.x,
-                y = fig.center.y - fig.height * radius / 4;
+                y = fig.center.y;
 
             //caching calculations
             if(fig.radius !== radius ) {
@@ -22,7 +22,7 @@ var createHexDraw = function (ctx) {
                 });
             }
 
-            ctx.strokeStyle = fig.stroke || 'rgb(150, 150, 80)';
+            ctx.strokeStyle = fig.color || 'rgb(150, 150, 80)';
             ctx.font = 'normal 16px helvetica';
             ctx.lineWidth = fig.lineWidth || 1;
 
