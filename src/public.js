@@ -4,8 +4,8 @@ var createHex = function (fig) {
     'use strict';
     fig = fig || {};
     var that = {},
-        $gameWindow = fig.$gameWindow || $('#window'),
-        $canvas = $('<canvas id="' + (fig.canvasId || 'game-screen') + '" ' +
+        $gameWindow = fig.$gameWindow,
+        $canvas = $('<canvas id="' + fig.canvasId + '" ' +
                         'width="' + $gameWindow.width() + '" ' +
                         'height="' + $gameWindow.height() + '"></canvas>');
 
@@ -14,56 +14,33 @@ var createHex = function (fig) {
     SCREEN.width = $canvas.width();
     SCREEN.height = $canvas.height();
 
-    var model = createHexModel({ size: fig.size || 50 }),
-
+    var model = createHexModel({ size: fig.size }),
         view = createHexView({
             draw: createHexDraw($canvas[0].getContext('2d'))
         }),
+        hex = createHexController({ model: model, view: view });
 
-        hex = createHexController({ model: model, view: view }),
+    that.zoom = _.bind(hex.zoom, hex);
+    that.borderScroll = _.bind(hex.borderScroll, hex);
+    that.focus = _.bind(hex.focus, hex);
+    that.coordAt = _.bind(hex.coordAt, hex);
 
-        eventManager = createHexEventManager({
-            $canvas: $canvas,
-            $startButton: fig.$start || $('#start'),
-            $stopButton: fig.$stop || $('#stop'),
-            hex: hex,
+    that.getHoverCoord = function () {};
+    that.setTile = function (fig) {};
+    that.getTile = function (coord) {};
 
-            mouseMove: fig.mouseMove || function (coord) {
-                hex.borderScroll(coord);
-                hex.focus(hex.coordAt(coord));
-            },
-
-            mouseLeave: fig.mouseLeave || function (coord) {
-                hex.borderScroll({ x: SCREEN.width / 2, y: SCREEN.height / 2 });
-            },
-
-            click: fig.click || function (coord) {
-                console.log(hex.coordAt(coord));
-            },
-
-            key: fig.key || {
-                up: {
-                    down: _.partial(hex.zoom, 1),
-                    up: _.partial(hex.zoom, 0)
-                },
-                down: {
-                    down: _.partial(hex.zoom, -1),
-                    up: _.partial(hex.zoom, 0)
-                }
-            }
-        });
+    var eventManager = createHexEventManager({
+        $canvas: $canvas,
+        hex: hex,
+        mouseMove: _.bind(fig.mouseMove, that),
+        mouseLeave: _.bind(fig.mouseLeave, that),
+        click: _.bind(fig.click, that),
+        key: fig.key.call(that, KEY)
+    });
 
     model.subscribe('board', _.bind(hex.drawBoard, hex));
 
     eventManager.start();
-
-    var coordinateChange = fig.coordinateChange || function () {};
-
-    that.getHoverCoord = function () {};
-
-    that.setTile = function (fig) {};
-
-    that.getTile = function (coord) {};
 
     return that;
 };

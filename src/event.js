@@ -35,46 +35,48 @@ var createHexEventManager = function (fig) {
     };
 
     $canvas.mousemove(_.compose(fig.mouseMove, getCursorCoord));
-
     $canvas.mouseleave(_.compose(fig.mouseLeave, getCursorCoord));
-
     $canvas.click(_.compose(fig.click, getCursorCoord));
+
+    //$startButton.click(_.bind(that.start, that));
 
     $(document).keydown(function (event) {
         switch(event.keyCode) {
-            case KEY.left:
-                break;
-            case KEY.right:
-                break;
+            //case KEY.left:
+            //    break;
+            //case KEY.right:
+            //    break;
             case KEY.up:
-                fig.key.up.down();
+                fig.key[KEY.up].down();
                 break;
             case KEY.down:
-                fig.key.down.down();
+                fig.key[KEY.down].down();
                 break;
             default:
-                console.log('unrecognized key');
+                console.log('unrecognized key down');
         }
         return false;
     });
 
     $(document).keyup(function (event) {
         switch(event.keyCode) {
-            case KEY.left:
-                break;
-            case KEY.right:
-                break;
+            //case KEY.left:
+            //    break;
+            //case KEY.right:
+            //    break;
             case KEY.up:
-                fig.key.up.up();
+                fig.key[KEY.up].up();
                 break;
             case KEY.down:
-                fig.key.down.up();
+                fig.key[KEY.down].up();
                 break;
+            default:
+                console.log('unrecognized key up');
         }
         return false;
     });
 
-    $startButton.click(_.bind(that.start, that));
+
 
     return that;
 };
