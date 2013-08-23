@@ -5,6 +5,7 @@ var createHexView = function (fig) {
         draw = fig.draw,
         focusColor = fig.focusColor || 'rgb(255, 92, 40)',
         focusWidth = fig.focusWidth || 7,
+        skewHeight = fig.skewHeight || 0,
         radius = null,
         longLeg = null,
         screenCenter = { x: SCREEN.width / 2, y: SCREEN.height / 2 },
@@ -31,33 +32,30 @@ var createHexView = function (fig) {
 
         localCoord = function (center) {
             var size = Math.floor(
-                (_.max([SCREEN.width, SCREEN.height]) / (radius * 1.5)) / 2 + 8
+                (_.max([SCREEN.width, SCREEN.height]) / (radius * 1.5)) / 2 + 5
             );
             return hexagonOfCoordinates(size, pixelToCoord(center));
+        },
+
+        updateDimensions = function (newRadius) {
+            radius =  newRadius;
+            longLeg = newRadius * Math.sqrt(3) / (2 + skewHeight);
         };
 
-
     that.pixelToCoord = function (fig) {
-        radius =- fig.radius;
-        longLeg = fig.radius * Math.sqrt(3) / 3;
-
-        var center = fig.center,
-            cursor = fig.pixel,
-            shifted = vector.add(center, vector.subtract(cursor, screenCenter));
-
-        shifted.x *= -1;
-        var coord = pixelToCoord(shifted);
-
-        return coord;
+        updateDimensions(fig.radius);
+        return pixelToCoord(vector.add(
+            fig.center,
+            vector.subtract(fig.pixel, screenCenter)
+        ));
     };
 
     that.drawHexagonalGrid = function (fig) {
-        radius = fig.radius;
-        longLeg = radius * Math.sqrt(3) / 3;
+        updateDimensions(fig.radius);
 
         _.each(localCoord(fig.center), function (coord) {
-            var pixel = coordToPixels(coord, fig.center);
-            var hexagon = fig.board[stringKey(coord)];
+            var pixel = coordToPixels(coord, fig.center),
+                hexagon = fig.board[stringKey(coord)];
 
             if(hexagon && isPixelOnScreen(pixel)) {
 
@@ -80,7 +78,8 @@ var createHexView = function (fig) {
                         radius: radius,
                         coord: coord,
                         color: focusColor,
-                        lineWidth: focusWidth
+                        lineWidth: focusWidth,
+                        skewHeight: skewHeight
                     });
                 }
             }

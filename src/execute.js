@@ -7,6 +7,8 @@ $(document).ready(function () {
 
         size: 50,
 
+        skewHeight: 1,
+
         minZoom: 40,
         maxZoom: 150,
         radius: 70,

@@ -1,3 +1,5 @@
+//module level definitions
+
 //canvas dimensions. (assigned values after canvas is created)
 var SCREEN = { width: null, height: null };
 

@@ -18,7 +18,8 @@ var createHex = function (fig) {
         view = createHexView({
             draw: createHexDraw($canvas[0].getContext('2d')),
             focusColor: fig.focusColor,
-            focusWidth: fig.focusWidth
+            focusWidth: fig.focusWidth,
+            skewHeight: fig.skewHeight
         }),
         hex = createHexController({
             model: model,
@@ -42,9 +43,14 @@ var createHex = function (fig) {
         y: SCREEN.height / 2
     });
 
-    that.getHoverCoord = function () {};
+
     that.setTile = function (fig) {};
+    that.setBoard = function (board) {
+    };
     that.getTile = function (coord) {};
+
+    that.hexagonOfCoordinates = hexagonOfCoordinates;
+
 
     var eventManager = createHexEventManager({
         $canvas: $canvas,

@@ -21,6 +21,7 @@ module.exports = function (grunt) {
             dist: {
                 src: [
                     'src/intro.js',
+                    'lib/jsmessage.js',
                     'src/define.js',
                     'src/function.js',
                     'src/model.js',
@@ -28,8 +29,9 @@ module.exports = function (grunt) {
                     'src/view.js',
                     'src/controller.js',
                     'src/event.js',
-                    'src/execute.js',
-                    'src/outro.js'
+                    'src/public.js',
+                    'src/outro.js',
+                    'src/execute.js'
                 ],
                 dest: '<%= pkg.name %>.js'
             }

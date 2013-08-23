@@ -23,10 +23,10 @@ var createHexModel = function (fig) {
     };
 
 
-
     var that = jsMessage.mixinPubSub(),
         size = fig.size,
-        board = (function () {
+
+        board = fig.board || (function () {
             var board = {};
             _.each(hexagonOfCoordinates(size), function (coord) {
                 board[coord.x + ',' + coord.y] = {
@@ -41,10 +41,30 @@ var createHexModel = function (fig) {
             that.publish('board', board);
         },
 
+
+
         axialToCubic = function (axial) {};
+
 
     that.getBoard = function () {
         return board;
+    };
+
+    that.getTile = function (coord) {
+        return board[stringKey(coord)];
+    };
+
+    that.setBoard = function (newBoard) {
+        board = newBoard;
+        publishBoard();
+    };
+
+    that.setTile = function (coord, data) {
+        var tile = that.getTile(coord);
+        _.each(data, function (val, key) {
+            tile[key] = val;
+        });
+        publishBoard();
     };
 
     that.focus = (function () {

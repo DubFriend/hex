@@ -1,3 +1,5 @@
+//module level function definitions.
+
 var parseKey = function (stringKey) {
     var numbers = stringKey.split(',');
     return {

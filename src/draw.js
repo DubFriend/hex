@@ -12,12 +12,12 @@ var createHexDraw = function (ctx) {
                 y = fig.center.y;
 
             //caching calculations
-            if(fig.radius !== radius ) {
+            if(fig.radius !== radius) {
                 radius = fig.radius;
                 moves = _.map(_.range(0, 2*Math.PI, Math.PI/3), function (deg) {
                     return {
                         x: Math.cos(deg) * radius,
-                        y: Math.sin(deg) * radius / 1.5
+                        y: Math.sin(deg) * radius / (1 + (fig.skewHeight || 0) / 2)
                     };
                 });
             }
