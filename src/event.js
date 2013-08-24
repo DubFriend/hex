@@ -44,6 +44,7 @@ var createHexEventManager = function (fig) {
     $canvas.mouseleave(_.compose(fig.mouseLeave, getCursorCoord));
     $canvas.click(_.compose(fig.click, getCursorCoord));
     $canvas.mousewheel(function(event, delta, deltaX, deltaY) {
+        event.preventDefault();
         fig.mouseWheel(deltaX, deltaY);
     });
 

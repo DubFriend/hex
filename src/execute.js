@@ -3,7 +3,9 @@ $(document).ready(function () {
 
     var hex = createHex({
         $gameWindow: $('#window'),
+
         canvasId: 'game-screen',
+
 
         size: 50,
 

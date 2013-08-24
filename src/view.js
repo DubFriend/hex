@@ -2,7 +2,10 @@
 var createHexView = function (fig) {
     'use strict';
     var that = {},
-        draw = fig.draw,
+
+        backgroundDraw = fig.backgroundDraw,
+        foregroundDraw = fig.foregroundDraw,
+
         focusColor = fig.focusColor || 'rgb(255, 92, 40)',
         focusWidth = fig.focusWidth || 7,
         skewHeight = fig.skewHeight || 0,
@@ -59,7 +62,7 @@ var createHexView = function (fig) {
 
             if(hexagon && isPixelOnScreen(pixel)) {
 
-                draw.image({
+                backgroundDraw.image({
                     image: hexagon.background.image,
                     clip: hexagon.background.clip,
                     coord: {
@@ -70,7 +73,7 @@ var createHexView = function (fig) {
                 });
 
                 if(hexagon.focus) {
-                    draw.hexagon({
+                    backgroundDraw.hexagon({
                         center: pixel,
                         radius: radius,
                         coord: coord,
@@ -84,7 +87,7 @@ var createHexView = function (fig) {
     };
 
     that.clear = function () {
-        draw.clear();
+        backgroundDraw.clear();
     };
 
     return that;

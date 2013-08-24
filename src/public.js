@@ -5,21 +5,28 @@ var createHex = function (fig) {
     fig = fig || {};
     var that = {},
         $gameWindow = fig.$gameWindow,
-        $canvas = $('<canvas id="' + fig.canvasId + '" ' +
+
+        buildCanvas = function (htmlClass) {
+            return $('<canvas class="' + htmlClass + '" ' +
                         'width="' + $gameWindow.width() + '" ' +
                         'height="' + $gameWindow.height() + '"></canvas>');
+        },
 
-    $gameWindow.append($canvas);
+        $backgroundCanvas = buildCanvas('background'),
+        $foregroundCanvas = buildCanvas('foreground');
 
-    SCREEN.width = $canvas.width();
-    SCREEN.height = $canvas.height();
+    $gameWindow.append($backgroundCanvas);
+    $gameWindow.append($foregroundCanvas);
+
+    SCREEN.width = $foregroundCanvas.width();
+    SCREEN.height = $foregroundCanvas.height();
 
     var model = createHexModel({
             size: fig.size
         }),
 
         view = createHexView({
-            draw: createHexDraw($canvas[0].getContext('2d')),
+            backgroundDraw: createHexDraw($backgroundCanvas[0].getContext('2d')),
             focusColor: fig.focusColor,
             focusWidth: fig.focusWidth,
             skewHeight: fig.skewHeight
@@ -57,7 +64,7 @@ var createHex = function (fig) {
     that.neighborCoordinates = neighborCoord;
 
     var eventManager = createHexEventManager({
-        $canvas: $canvas,
+        $canvas: $foregroundCanvas,
         hex: hex,
         mouseMove: _.bind(fig.mouseMove, that),
         mouseLeave: _.bind(fig.mouseLeave, that),
