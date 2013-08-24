@@ -14,7 +14,9 @@ var createHex = function (fig) {
     SCREEN.width = $canvas.width();
     SCREEN.height = $canvas.height();
 
-    var model = createHexModel({ size: fig.size }),
+    var model = createHexModel({
+            size: fig.size
+        }),
         view = createHexView({
             draw: createHexDraw($canvas[0].getContext('2d')),
             focusColor: fig.focusColor,
@@ -43,14 +45,16 @@ var createHex = function (fig) {
         y: SCREEN.height / 2
     });
 
+    that.setTile = _.bind(model.setTile, model);
+    that.setBoard = _.bind(model.setBoard, model);
+    that.getTile = _.bind(model.getTile, model);
+    that.getBoard = _.bind(model.getBoard, model);
 
-    that.setTile = function (fig) {};
-    that.setBoard = function (board) {
-    };
-    that.getTile = function (coord) {};
+
 
     that.hexagonOfCoordinates = hexagonOfCoordinates;
-
+    that.stringKey = stringKey;
+    that.neighborCoordinates = neighborCoord;
 
     var eventManager = createHexEventManager({
         $canvas: $canvas,
@@ -61,9 +65,9 @@ var createHex = function (fig) {
         key: fig.key.call(that, KEY)
     });
 
-    model.subscribe('board', _.bind(hex.drawBoard, hex));
+    that.start = _.bind(eventManager.start, eventManager);
 
-    eventManager.start();
+    model.subscribe('board', _.bind(hex.drawBoard, hex));
 
     return that;
 };

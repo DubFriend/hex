@@ -46,4 +46,45 @@ $(document).ready(function () {
         }
     });
 
+    var lightHexagonImg = new Image(),
+        darkHexagonImg = new Image();
+    lightHexagonImg.src = 'hexagon_light.png';
+    darkHexagonImg.src = 'hexagon_dark.png';
+
+    hex.setBoard((function () {
+        var board = {};
+        _.each(hex.hexagonOfCoordinates(50), function (coord) {
+            board[hex.stringKey(coord)] = {
+                background: {
+                    image: _.random(1) ? lightHexagonImg : darkHexagonImg,
+                    clip: {
+                        coord: { x: 4, y: 0 },
+                        width: { x: 442, y: 388 }
+                    }
+                }
+            };
+        });
+        return board;
+    }()));
+
+    //setting the center tiles to alternate between light and dark image
+    var blinkCount = 0;
+    setInterval(function () {
+        var tempBoard = hex.getBoard();
+        _.each(hex.neighborCoordinates({ x: 0, y: 0 }), function (coord) {
+            var hexagon = tempBoard[hex.stringKey(coord)];
+            hexagon.background = {
+                image: blinkCount % 2 === 0 ? lightHexagonImg : darkHexagonImg,
+                clip: {
+                    coord: { x: 4, y: 0 },
+                    width: { x: 442, y: 388 }
+                }
+            };
+        });
+        hex.setBoard(tempBoard);
+        blinkCount += 1;
+    }, 500);
+
+    hex.start();
+
 });

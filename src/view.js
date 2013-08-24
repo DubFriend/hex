@@ -32,7 +32,7 @@ var createHexView = function (fig) {
 
         localCoord = function (center) {
             var size = Math.floor(
-                (_.max([SCREEN.width, SCREEN.height]) / (radius * 1.5)) / 2 + 5
+                (_.max([SCREEN.width, SCREEN.height]) / (radius * 1.5)) / 2 + 6
             );
             return hexagonOfCoordinates(size, pixelToCoord(center));
         },
@@ -60,14 +60,11 @@ var createHexView = function (fig) {
             if(hexagon && isPixelOnScreen(pixel)) {
 
                 draw.image({
-                    image: hexagon.image,
+                    image: hexagon.background.image,
+                    clip: hexagon.background.clip,
                     coord: {
                         x: pixel.x - radius,
                         y: pixel.y - longLeg
-                    },
-                    clip: {
-                        coord: { x: 4, y: 0 },
-                        width: { x: 442, y: 388}
                     },
                     width: { x: radius * 2, y: longLeg * 2 }
                 });
