@@ -11,6 +11,13 @@ var createHexController = function (fig) {
             min: fig.minZoom || 25,
             max: fig.maxZoom || 150,
             diff: 0
+        },
+
+        updateRadius = function () {
+            var newRadius = radius + zoom.diff >= zoom.min && radius + zoom.diff <= zoom.max ? radius + zoom.diff : radius;
+            center.x *= newRadius / radius;
+            center.y *= newRadius / radius;
+            radius = newRadius;
         };
 
     that.drawBoard = function (board) {
@@ -25,7 +32,7 @@ var createHexController = function (fig) {
     that.tick = (function() {
         var lastCenter = { x: 0, y: 0 }, lastRadius;
         return function () {
-            radius += radius + zoom.diff >= zoom.min && radius + zoom.diff <= zoom.max ? zoom.diff : 0;
+            updateRadius();
             if(!(
                 velocity.x === 0 &&
                 velocity.y === 0 &&
