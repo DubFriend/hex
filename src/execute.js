@@ -4,9 +4,6 @@ $(document).ready(function () {
     var hex = createHex({
         $gameWindow: $('#window'),
 
-        canvasId: 'game-screen',
-
-
         size: 50,
 
         skewHeight: 1,
@@ -56,9 +53,11 @@ $(document).ready(function () {
     });
 
     var lightHexagonImg = new Image(),
-        darkHexagonImg = new Image();
+        darkHexagonImg = new Image(),
+        smurfSpriteImg = new Image();
     lightHexagonImg.src = 'hexagon_light.png';
     darkHexagonImg.src = 'hexagon_dark.png';
+    smurfSpriteImg.src = 'smurf_sprite.png';
 
     var hexagonClip = {
         coord: { x: 4, y: 0 },
@@ -77,6 +76,27 @@ $(document).ready(function () {
         });
         return board;
     }()));
+
+    var smurfSprite = hex.createSprite({
+        image: smurfSpriteImg,
+        frameSpeed: 60,
+        frames: _.map(_.range(16), function (num) {
+            return {
+                coord: {
+                    x: (num % 4) * 127.75,
+                    y: Math.floor(num / 4) * 127.75
+                },
+                width: { x: 127.75, y: 127.75 }
+            };
+        })
+    });
+
+    hex.setTile(_.map(_.range(50), function () {
+        return {
+            coord: { x: _.random(-15, 15), y: _.random(-15, 15) },
+            foreground: smurfSprite
+        };
+    }));
 
     //setting the center tiles to alternate between light and dark image
     setInterval((function () {

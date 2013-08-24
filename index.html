@@ -9,24 +9,27 @@
             margin: 0;
             padding: 0;
         }
+
         #window {
             height: 99%;
             width: 99%;
         }
-        canvas {
+
+        #window canvas {
             position: absolute;
             top: 0;
             left: 0;
         }
-        canvas.background {
+
+        #window canvas.background {
             background: rgb(207, 177, 145);
             z-index: 0;
         }
-        canvas.foreground {
-            background-color: rgba(50, 100, 200, 0.5);
+
+        #window canvas.foreground {
+            /*background-color: rgba(50, 100, 200, 0.3);*/
             z-index: 1;
         }
-
     </style>
 </head>
 <body>

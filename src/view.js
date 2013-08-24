@@ -53,24 +53,59 @@ var createHexView = function (fig) {
         ));
     };
 
+    that.drawForeground = function (fig) {
+        updateDimensions(fig.radius);
+         _.each(localCoord(fig.center), function (coord) {
+            var pixel = coordToPixels(coord, fig.center),
+                hexagon = fig.board[stringKey(coord)],
+                pixelCoord = { x: pixel.x - radius, y: pixel.y - longLeg },
+                width = {  x: radius * 2, y: longLeg * 2 };
+
+            if(hexagon && isPixelOnScreen(pixel)) {
+                if(hexagon.foreground) {
+                    if(hexagon.foreground instanceof Sprite) {
+                        var spriteData = hexagon.foreground.getData();
+                        foregroundDraw.image({
+                            image: spriteData.image,
+                            clip: spriteData.clip,
+                            coord: pixelCoord,
+                            width: width
+                        });
+                    }
+                }
+            }
+        });
+    };
+
     that.drawHexagonalGrid = function (fig) {
         updateDimensions(fig.radius);
 
         _.each(localCoord(fig.center), function (coord) {
             var pixel = coordToPixels(coord, fig.center),
-                hexagon = fig.board[stringKey(coord)];
+                hexagon = fig.board[stringKey(coord)],
+                pixelCoord = { x: pixel.x - radius, y: pixel.y - longLeg },
+                width = {  x: radius * 2, y: longLeg * 2 };
 
             if(hexagon && isPixelOnScreen(pixel)) {
 
                 backgroundDraw.image({
                     image: hexagon.background.image,
                     clip: hexagon.background.clip,
-                    coord: {
-                        x: pixel.x - radius,
-                        y: pixel.y - longLeg
-                    },
-                    width: { x: radius * 2, y: longLeg * 2 }
+                    coord: pixelCoord,
+                    width: width
                 });
+
+                if(hexagon.foreground) {
+                    if(hexagon.foreground instanceof Sprite) {
+                        var spriteData = hexagon.foreground.getData();
+                        foregroundDraw.image({
+                            image: spriteData.image,
+                            clip: spriteData.clip,
+                            coord: pixelCoord,
+                            width: width
+                        });
+                    }
+                }
 
                 if(hexagon.focus) {
                     backgroundDraw.hexagon({
@@ -86,9 +121,9 @@ var createHexView = function (fig) {
         });
     };
 
-    that.clear = function () {
-        backgroundDraw.clear();
-    };
+
+    that.clearBackground = _.bind(backgroundDraw.clear, backgroundDraw);
+    that.clearForeground = _.bind(foregroundDraw.clear, foregroundDraw);
 
     return that;
 };

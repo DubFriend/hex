@@ -59,8 +59,53 @@ var createHexDraw = function (ctx) {
         ctx.drawImage.apply(ctx, args);
     };
 
-    that.clear = function () {
-        ctx.clearRect(0, 0, SCREEN.width, SCREEN.height);
+    that.clear = function (coord, width) {
+        coord = coord || { x: 0, y: 0};
+        width = width || { x: SCREEN.width, y: SCREEN.height };
+        ctx.clearRect(coord.x, coord.y, width.x, width.y);
+    };
+
+    return that;
+};
+
+
+//create animated sprite
+var Sprite = function () {};
+var createSprite = function (fig) {
+    var that = new Sprite(),
+        sheet = fig.image,
+        frameSpeed = fig.frameSpeed,
+        frames = fig.frames,
+        currentFrame = 0,
+        frameDelta = 0,
+        lastChangeTime = Date.now(),
+        paused = false;
+
+    that.getData = function () {
+        if(!paused) {
+            if(frameDelta > frameSpeed) {
+                currentFrame += 1;
+                frameDelta = 0;
+            }
+            else {
+                var now = Date.now();
+                frameDelta += now - lastChangeTime;
+                lastChangeTime = now;
+            }
+        }
+
+        return {
+            image: sheet,
+            clip:frames[currentFrame % frames.length]
+        };
+    };
+
+    that.pause = function () {
+        paused = true;
+    };
+
+    that.resume = function () {
+        paused = false;
     };
 
     return that;

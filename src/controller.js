@@ -21,8 +21,18 @@ var createHexController = function (fig) {
         };
 
     that.drawBoard = function (board) {
-        view.clear();
+        view.clearBackground();
+        view.clearForeground();
         view.drawHexagonalGrid({
+            board: board,
+            center: center,
+            radius: radius
+        });
+    };
+
+    that.drawForeground = function (board) {
+        view.clearForeground();
+        view.drawForeground({
             board: board,
             center: center,
             radius: radius
@@ -44,6 +54,9 @@ var createHexController = function (fig) {
                 lastCenter.x = center.x;
                 lastCenter.y = center.y;
                 lastRadius = radius;
+            }
+            else {
+                that.drawForeground(model.getBoard());
             }
         };
     }());

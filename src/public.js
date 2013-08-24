@@ -27,6 +27,7 @@ var createHex = function (fig) {
 
         view = createHexView({
             backgroundDraw: createHexDraw($backgroundCanvas[0].getContext('2d')),
+            foregroundDraw: createHexDraw($foregroundCanvas[0].getContext('2d')),
             focusColor: fig.focusColor,
             focusWidth: fig.focusWidth,
             skewHeight: fig.skewHeight
@@ -62,6 +63,8 @@ var createHex = function (fig) {
     that.hexagonOfCoordinates = hexagonOfCoordinates;
     that.stringKey = stringKey;
     that.neighborCoordinates = neighborCoord;
+
+    that.createSprite = createSprite;
 
     var eventManager = createHexEventManager({
         $canvas: $foregroundCanvas,
