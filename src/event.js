@@ -43,6 +43,9 @@ var createHexEventManager = function (fig) {
     $canvas.mousemove(_.compose(fig.mouseMove, getCursorCoord));
     $canvas.mouseleave(_.compose(fig.mouseLeave, getCursorCoord));
     $canvas.click(_.compose(fig.click, getCursorCoord));
+    $canvas.mousewheel(function(event, delta, deltaX, deltaY) {
+        fig.mouseWheel(deltaX, deltaY);
+    });
 
     that.start = function () {
         hex.tick();

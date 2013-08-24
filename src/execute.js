@@ -16,6 +16,8 @@ $(document).ready(function () {
         focusColor: 'orange',
         focusWidth: 9,
 
+        //functions get 'this' bound to the createHex instance
+
         mouseMove: function (coord) {
             this.borderScroll(coord);
             this.focus(this.coordAt(coord));
@@ -23,6 +25,11 @@ $(document).ready(function () {
 
         mouseLeave: function () {
             this.stopScroll();
+        },
+
+        mouseWheel: function (dx, dy) {
+            this.zoom(dy * 7);
+            setTimeout(_.bind(this.zoomStop, this), 60);
         },
 
         click: function (coord) {
@@ -51,16 +58,18 @@ $(document).ready(function () {
     lightHexagonImg.src = 'hexagon_light.png';
     darkHexagonImg.src = 'hexagon_dark.png';
 
+    var hexagonClip = {
+        coord: { x: 4, y: 0 },
+        width: { x: 442, y: 388 }
+    };
+
     hex.setBoard((function () {
         var board = {};
         _.each(hex.hexagonOfCoordinates(50), function (coord) {
             board[hex.stringKey(coord)] = {
                 background: {
                     image: _.random(1) ? lightHexagonImg : darkHexagonImg,
-                    clip: {
-                        coord: { x: 4, y: 0 },
-                        width: { x: 442, y: 388 }
-                    }
+                    clip: hexagonClip
                 }
             };
         });
@@ -68,22 +77,32 @@ $(document).ready(function () {
     }()));
 
     //setting the center tiles to alternate between light and dark image
-    var blinkCount = 0;
-    setInterval(function () {
-        var tempBoard = hex.getBoard();
-        _.each(hex.neighborCoordinates({ x: 0, y: 0 }), function (coord) {
-            var hexagon = tempBoard[hex.stringKey(coord)];
-            hexagon.background = {
-                image: blinkCount % 2 === 0 ? lightHexagonImg : darkHexagonImg,
-                clip: {
-                    coord: { x: 4, y: 0 },
-                    width: { x: 442, y: 388 }
+    setInterval((function () {
+        var blinkCount = 0;
+        return function () {
+            //can take array of objects
+            hex.setTile(_.map(hex.neighborCoordinates({ x: 0, y: 0 }), function (coord) {
+                return {
+                    coord: coord,
+                    background : {
+                        image: blinkCount % 2 === 0 ? lightHexagonImg : darkHexagonImg,
+                        clip: hexagonClip
+                    }
+                };
+            }));
+
+            //or as seperate parameters
+            hex.setTile({
+                coord: { x: 0, y: 0 },
+                background: {
+                    image: blinkCount % 2 === 1 ? lightHexagonImg : darkHexagonImg,
+                    clip: hexagonClip
                 }
-            };
-        });
-        hex.setBoard(tempBoard);
-        blinkCount += 1;
-    }, 500);
+            });
+
+            blinkCount += 1;
+        };
+    }()), 500);
 
     hex.start();
 

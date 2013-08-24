@@ -22,12 +22,27 @@ var createHexModel = function (fig) {
         publishBoard();
     };
 
-    that.setTile = function (coord, data) {
-        var tile = that.getTile(coord);
-        _.each(data, function (val, key) {
-            tile[key] = val;
-        });
-        publishBoard();
+    that.setTile = function () {//coord, data) {
+
+        if(_.isArray(arguments[0])) {
+            that.setTile.apply(that, arguments[0]);
+        }
+        else {
+            _.each(arguments, function (data) {
+                var tile = that.getTile(data.coord);
+                delete data.coord;
+                _.each(data, function (val, key) {
+                    tile[key] = val;
+                });
+            });
+
+            /*var tile = that.getTile(coord);
+            _.each(data, function (val, key) {
+                tile[key] = val;
+            });*/
+
+            publishBoard();
+        }
     };
 
     that.focus = (function () {

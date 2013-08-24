@@ -17,12 +17,14 @@ var createHex = function (fig) {
     var model = createHexModel({
             size: fig.size
         }),
+
         view = createHexView({
             draw: createHexDraw($canvas[0].getContext('2d')),
             focusColor: fig.focusColor,
             focusWidth: fig.focusWidth,
             skewHeight: fig.skewHeight
         }),
+
         hex = createHexController({
             model: model,
             view: view,
@@ -50,8 +52,6 @@ var createHex = function (fig) {
     that.getTile = _.bind(model.getTile, model);
     that.getBoard = _.bind(model.getBoard, model);
 
-
-
     that.hexagonOfCoordinates = hexagonOfCoordinates;
     that.stringKey = stringKey;
     that.neighborCoordinates = neighborCoord;
@@ -62,6 +62,7 @@ var createHex = function (fig) {
         mouseMove: _.bind(fig.mouseMove, that),
         mouseLeave: _.bind(fig.mouseLeave, that),
         click: _.bind(fig.click, that),
+        mouseWheel: _.bind(fig.mouseWheel, that),
         key: fig.key.call(that, KEY)
     });
 

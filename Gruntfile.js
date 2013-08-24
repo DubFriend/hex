@@ -20,6 +20,7 @@ module.exports = function (grunt) {
             },
             dist: {
                 src: [
+                    'lib/jquery.mousewheel.js',
                     'src/intro.js',
                     'lib/jsmessage.js',
                     'src/define.js',
