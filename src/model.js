@@ -1,7 +1,6 @@
 var createHexModel = function (fig) {
     'use strict';
 
-
     var that = jsMessage.mixinPubSub(),
         size = fig.size,
         board = null,
@@ -35,11 +34,6 @@ var createHexModel = function (fig) {
                     tile[key] = val;
                 });
             });
-
-            /*var tile = that.getTile(coord);
-            _.each(data, function (val, key) {
-                tile[key] = val;
-            });*/
 
             publishBoard();
         }

@@ -13,8 +13,12 @@ var createHexController = function (fig) {
             diff: 0
         },
 
+        isRadiusInBounds = function () {
+            return radius + zoom.diff >= zoom.min && radius + zoom.diff <= zoom.max;
+        },
+
         updateRadius = function () {
-            var newRadius = radius + zoom.diff >= zoom.min && radius + zoom.diff <= zoom.max ? radius + zoom.diff : radius;
+            var newRadius = isRadiusInBounds() ? radius + zoom.diff : radius;
             center.x *= newRadius / radius;
             center.y *= newRadius / radius;
             radius = newRadius;
@@ -40,7 +44,14 @@ var createHexController = function (fig) {
     };
 
     that.tick = (function() {
-        var lastCenter = { x: 0, y: 0 }, lastRadius;
+        var lastCenter = { x: 0, y: 0 },
+            lastRadius,
+            updateOrientation = function () {
+                lastCenter.x = center.x;
+                lastCenter.y = center.y;
+                lastRadius = radius;
+            };
+
         return function () {
             updateRadius();
             if(!(
@@ -50,10 +61,7 @@ var createHexController = function (fig) {
             )) {
                 center = vector.add(center, velocity);
                 that.drawBoard(model.getBoard());
-                //update last orientation
-                lastCenter.x = center.x;
-                lastCenter.y = center.y;
-                lastRadius = radius;
+                updateOrientation();
             }
             else {
                 that.drawForeground(model.getBoard());

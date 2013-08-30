@@ -3,6 +3,7 @@
 //canvas dimensions. (assigned values after canvas is created)
 var SCREEN = { width: null, height: null };
 
+//keyboard mappings
 var KEY = {
     left: 37,
     up: 38,

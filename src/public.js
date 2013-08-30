@@ -3,6 +3,7 @@
 var createHex = function (fig) {
     'use strict';
     fig = fig || {};
+
     var that = {},
         $gameWindow = fig.$gameWindow,
 
@@ -21,9 +22,7 @@ var createHex = function (fig) {
     SCREEN.width = $foregroundCanvas.width();
     SCREEN.height = $foregroundCanvas.height();
 
-    var model = createHexModel({
-            size: fig.size
-        }),
+    var model = createHexModel({ size: fig.size }),
 
         view = createHexView({
             backgroundDraw: createHexDraw($backgroundCanvas[0].getContext('2d')),

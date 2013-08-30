@@ -50,7 +50,7 @@ var createHexEventManager = function (fig) {
 
     that.start = function () {
         hex.tick();
-        requestAnimationFrame(_.bind(that.start, that));
+        requestAnimationFrame(that.start);
     };
 
     return that;

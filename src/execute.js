@@ -4,13 +4,13 @@ $(document).ready(function () {
     var hex = createHex({
         $gameWindow: $('#window'),
 
-        size: 50,
+        size: 50, //size of map (number of tiles in each direction)
 
-        skewHeight: 1,
+        skewHeight: 1, //vertical dilation parameter. (set to 0 for no dilation)
 
-        minZoom: 40,
-        maxZoom: 150,
-        radius: 70,
+        minZoom: 40, //min radius
+        maxZoom: 150, //max radius
+        radius: 70, //starting radius size (pixels)
 
         focusColor: 'orange',
         focusWidth: 9,
@@ -55,6 +55,7 @@ $(document).ready(function () {
     var lightHexagonImg = new Image(),
         darkHexagonImg = new Image(),
         smurfSpriteImg = new Image();
+
     lightHexagonImg.src = 'hexagon_light.png';
     darkHexagonImg.src = 'hexagon_dark.png';
     smurfSpriteImg.src = 'smurf_sprite.png';
@@ -79,14 +80,14 @@ $(document).ready(function () {
 
     var smurfSprite = hex.createSprite({
         image: smurfSpriteImg,
-        frameSpeed: 60,
+        frameSpeed: 50,
         frames: _.map(_.range(16), function (num) {
             return {
                 coord: {
-                    x: (num % 4) * 127.75,
-                    y: Math.floor(num / 4) * 127.75
+                    x: (num % 4) * 128,
+                    y: Math.floor(num / 4) * 128
                 },
-                width: { x: 127.75, y: 127.75 }
+                width: { x: 128, y: 128 }
             };
         })
     });

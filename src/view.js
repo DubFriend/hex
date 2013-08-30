@@ -9,6 +9,7 @@ var createHexView = function (fig) {
         focusColor = fig.focusColor || 'rgb(255, 92, 40)',
         focusWidth = fig.focusWidth || 7,
         skewHeight = fig.skewHeight || 0,
+
         radius = null,
         longLeg = null,
         screenCenter = { x: SCREEN.width / 2, y: SCREEN.height / 2 },
@@ -57,9 +58,7 @@ var createHexView = function (fig) {
         updateDimensions(fig.radius);
          _.each(localCoord(fig.center), function (coord) {
             var pixel = coordToPixels(coord, fig.center),
-                hexagon = fig.board[stringKey(coord)],
-                pixelCoord = { x: pixel.x - radius, y: pixel.y - longLeg },
-                width = {  x: radius * 2, y: longLeg * 2 };
+                hexagon = fig.board[stringKey(coord)];
 
             if(hexagon && isPixelOnScreen(pixel)) {
                 if(hexagon.foreground) {
@@ -68,8 +67,8 @@ var createHexView = function (fig) {
                         foregroundDraw.image({
                             image: spriteData.image,
                             clip: spriteData.clip,
-                            coord: pixelCoord,
-                            width: width
+                            coord: { x: pixel.x - radius, y: pixel.y - longLeg },
+                            width: { x: radius * 2, y: longLeg * 2 }
                         });
                     }
                 }
@@ -81,17 +80,17 @@ var createHexView = function (fig) {
         updateDimensions(fig.radius);
 
         _.each(localCoord(fig.center), function (coord) {
-            var pixel = coordToPixels(coord, fig.center),
-                hexagon = fig.board[stringKey(coord)],
-                pixelCoord = { x: pixel.x - radius, y: pixel.y - longLeg },
-                width = {  x: radius * 2, y: longLeg * 2 };
+            var pixelCenter = coordToPixels(coord, fig.center),
+                pixelOffset = { x: pixelCenter.x - radius, y: pixelCenter.y - longLeg },
+                width = {  x: radius * 2, y: longLeg * 2 },
+                hexagon = fig.board[stringKey(coord)];
 
-            if(hexagon && isPixelOnScreen(pixel)) {
+            if(hexagon && isPixelOnScreen(pixelCenter)) {
 
                 backgroundDraw.image({
                     image: hexagon.background.image,
                     clip: hexagon.background.clip,
-                    coord: pixelCoord,
+                    coord: pixelOffset,
                     width: width
                 });
 
@@ -101,7 +100,7 @@ var createHexView = function (fig) {
                         foregroundDraw.image({
                             image: spriteData.image,
                             clip: spriteData.clip,
-                            coord: pixelCoord,
+                            coord: pixelOffset,
                             width: width
                         });
                     }
@@ -109,7 +108,7 @@ var createHexView = function (fig) {
 
                 if(hexagon.focus) {
                     backgroundDraw.hexagon({
-                        center: pixel,
+                        center: pixelCenter,
                         radius: radius,
                         coord: coord,
                         color: focusColor,

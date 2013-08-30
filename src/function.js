@@ -78,13 +78,13 @@ var toDegree = function (rad) {
     return 180 * rad / Math.PI;
 };
 
-var eachToMap = function (arrayOfKeys, callback) {
-    var map = {};
-    _.each(arrayOfKeys, function (key) {
-        map[key] = callback(key);
-    });
-    return map;
-};
+//var eachToMap = function (arrayOfKeys, callback) {
+//    var map = {};
+//    _.each(arrayOfKeys, function (key) {
+//        map[key] = callback(key);
+//    });
+//    return map;
+//};
 
 var neighborCoord = function (coord) {
     return [
