@@ -21,8 +21,7 @@ var createHexModel = function (fig) {
         publishBoard();
     };
 
-    that.setTile = function () {//coord, data) {
-
+    that.setTile = function () {
         if(_.isArray(arguments[0])) {
             that.setTile.apply(that, arguments[0]);
         }

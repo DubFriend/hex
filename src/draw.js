@@ -8,8 +8,8 @@ var createHexDraw = function (ctx) {
         var radius, moves = [];
 
         return function (fig) {
-            var x = fig.center.x,
-                y = fig.center.y;
+            var x = fig.pixelCoord.x,
+                y = fig.pixelCoord.y;
 
             //caching calculations
             if(fig.radius !== radius) {
@@ -36,12 +36,13 @@ var createHexDraw = function (ctx) {
             ctx.stroke();
             //note: rendering text is slow
             ctx.lineWidth = 1;
-            ctx.strokeText(fig.coord.x + ", " + fig.coord.y, x, y);
+            ctx.strokeText(fig.boardCoord.x + ", " + fig.boardCoord.y, x, y);
         };
     }());
 
     that.image = function (fig) {
         var args = [fig.image];
+            //coord = fig.pixelCoord;
 
         if(fig.clip) {
             args.push(
@@ -50,7 +51,7 @@ var createHexDraw = function (ctx) {
             );
         }
 
-        args.push(fig.coord.x, fig.coord.y);
+        args.push(fig.pixelCoord.x, fig.pixelCoord.y);
 
         if(fig.width) {
             args.push(Math.floor(fig.width.x), Math.floor(fig.width.y));

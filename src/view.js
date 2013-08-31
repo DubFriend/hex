@@ -44,7 +44,60 @@ var createHexView = function (fig) {
         updateDimensions = function (newRadius) {
             radius =  newRadius;
             longLeg = newRadius * Math.sqrt(3) / (2 + skewHeight);
+        },
+
+        foreachViewableTile = function (fig, callback) {
+            updateDimensions(fig.radius);
+            _.each(localCoord(fig.center), function (coord) {
+                var pixelCenter = coordToPixels(coord, fig.center),
+                    hexagon = fig.board[stringKey(coord)];
+
+                if(hexagon && isPixelOnScreen(pixelCenter)) {
+                    callback(hexagon, pixelCenter, coord);
+                }
+            });
+        },
+
+        offsetPixelCoord = function (pixelCoord) {
+            return { x: pixelCoord.x - radius, y: pixelCoord.y - longLeg };
+        },
+
+        drawSprite = function (hexagon, pixelCoord) {
+            if(hexagon.foreground instanceof Sprite) {
+                var spriteData = hexagon.foreground.getData();
+                foregroundDraw.image({
+                    image: spriteData.image,
+                    clip: spriteData.clip,
+                    pixelCoord: offsetPixelCoord(pixelCoord),
+                    width: { x: radius * 2, y: longLeg * 2 }
+                });
+            }
+        },
+
+        drawBackground = function (hexagon, pixelCoord) {
+            if(hexagon.background) {
+                backgroundDraw.image({
+                    image: hexagon.background.image,
+                    clip: hexagon.background.clip,
+                    pixelCoord: offsetPixelCoord(pixelCoord),
+                    width: {  x: radius * 2, y: longLeg * 2 }
+                });
+            }
+        },
+
+        drawFocus = function (hexagon, pixelCoord, boardCoord) {
+            if(hexagon.focus) {
+                backgroundDraw.hexagon({
+                    pixelCoord: pixelCoord,
+                    boardCoord: boardCoord,
+                    radius: radius,
+                    color: focusColor,
+                    lineWidth: focusWidth,
+                    skewHeight: skewHeight
+                });
+            }
         };
+
 
     that.pixelToCoord = function (fig) {
         updateDimensions(fig.radius);
@@ -54,72 +107,17 @@ var createHexView = function (fig) {
         ));
     };
 
-    that.drawForeground = function (fig) {
-        updateDimensions(fig.radius);
-         _.each(localCoord(fig.center), function (coord) {
-            var pixel = coordToPixels(coord, fig.center),
-                hexagon = fig.board[stringKey(coord)];
-
-            if(hexagon && isPixelOnScreen(pixel)) {
-                if(hexagon.foreground) {
-                    if(hexagon.foreground instanceof Sprite) {
-                        var spriteData = hexagon.foreground.getData();
-                        foregroundDraw.image({
-                            image: spriteData.image,
-                            clip: spriteData.clip,
-                            coord: { x: pixel.x - radius, y: pixel.y - longLeg },
-                            width: { x: radius * 2, y: longLeg * 2 }
-                        });
-                    }
-                }
-            }
-        });
+    that.drawForegroundSpritesOnly = function (fig) {
+        foreachViewableTile(fig, drawSprite);
     };
 
     that.drawHexagonalGrid = function (fig) {
-        updateDimensions(fig.radius);
-
-        _.each(localCoord(fig.center), function (coord) {
-            var pixelCenter = coordToPixels(coord, fig.center),
-                pixelOffset = { x: pixelCenter.x - radius, y: pixelCenter.y - longLeg },
-                width = {  x: radius * 2, y: longLeg * 2 },
-                hexagon = fig.board[stringKey(coord)];
-
-            if(hexagon && isPixelOnScreen(pixelCenter)) {
-
-                backgroundDraw.image({
-                    image: hexagon.background.image,
-                    clip: hexagon.background.clip,
-                    coord: pixelOffset,
-                    width: width
-                });
-
-                if(hexagon.foreground) {
-                    if(hexagon.foreground instanceof Sprite) {
-                        var spriteData = hexagon.foreground.getData();
-                        foregroundDraw.image({
-                            image: spriteData.image,
-                            clip: spriteData.clip,
-                            coord: pixelOffset,
-                            width: width
-                        });
-                    }
-                }
-
-                if(hexagon.focus) {
-                    backgroundDraw.hexagon({
-                        center: pixelCenter,
-                        radius: radius,
-                        coord: coord,
-                        color: focusColor,
-                        lineWidth: focusWidth,
-                        skewHeight: skewHeight
-                    });
-                }
-            }
+        foreachViewableTile(fig, function (hexagon, pixelCoord, boardCoord) {
+            drawBackground(hexagon, pixelCoord);
+            drawSprite(hexagon, pixelCoord);
+            drawFocus(hexagon, pixelCoord, boardCoord);
         });
     };
-
 
     that.clearBackground = _.bind(backgroundDraw.clear, backgroundDraw);
     that.clearForeground = _.bind(foregroundDraw.clear, foregroundDraw);

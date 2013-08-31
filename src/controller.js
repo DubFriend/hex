@@ -36,7 +36,7 @@ var createHexController = function (fig) {
 
     that.drawForeground = function (board) {
         view.clearForeground();
-        view.drawForeground({
+        view.drawForegroundSpritesOnly({
             board: board,
             center: center,
             radius: radius
